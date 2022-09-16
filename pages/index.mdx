@@ -1,11 +1,90 @@
-import Bleed from 'nextra-theme-docs/bleed'
 
-# Nextra
 
-**Nextra** is a [Next.js](https://nextjs.org) based static site generator.
+# Introduction
 
-It supports Markdown and React components ([MDX](/features/mdx)), automatically generated [sidebar and anchor links](/get-started#sidebar-and-anchor-links), file-system based routing, built-in syntax highlighting, image optimization, custom layouts, i18n, and all the features you love about Next.js.
+You use the **Hoolva SDK** to build real-time media applications that can send and receive audio and video and allow content sharing. The **Hoolva SDK** provides builder tools that you use to build your own meeting applications.
 
-Here's what you will get in 1 minute:
+## Prerequisites
 
-<Bleed>![Nextra Example](../public/demo.png)</Bleed>
+Using the Hoolva SDK requires the following:
+
+- The ability to program.
+- A Hoolva account with developer role. Request one here
+- For the majority of use cases, you also need the following:
+  - **Meeting Events** – Emits events as and when it occurs. Different use cases can be build based on these events.
+  - **Meeting Session** – Receives meeting and participant information from the server application, and uses that information to make media connections. 
+
+## Concepts
+
+The following terminology and concepts are central to understanding how to use the Hoolva SDK.
+
+### Meeting
+An ephemeral resource identified by a unique Meeting ID. The Meeting ID is placed onto a group of media services that host the active meeting.
+
+### Participant
+A meeting participant that is identified by a unique participant ID. Participants may freely join and leave meetings using a client application built with an Hoolva SDK client library.
+
+### Observer
+An observer is similar to an event listener that will trigger when a message is received. For convenience, we have grouped the Observer which throw similar messages. Eg, A participant observer will throw messages connected to the participants in the meeting.
+
+### API Key
+A unique token is assigned to each participant. Participants use the join token to authenticate with the media service group.
+
+## Architecture
+The following list describes how the different components of the Hoolva SDK architecture work together to support meetings and participants, audio, video, chat, and content sharing.
+
+### Meetings and participants
+When the client application creates a new meeting the server will respond with the Meeting ID which the client can use to join. The client SDK will create a secure web socket connection with the server for exchanging messages. The client application will monitor the observer for new messages flowing. Each created participant is assigned a unique ID, an opaque secret key that our server application must securely transfer to the client authorized to join the meeting on behalf of a participant. Clients use a combination of secure WebSockets and Datagram Transport Layer Security (DTLS) to securely signal the media service group and to send and receive media to and from other participants through the media layer.
+
+### Audio
+The media service mixes audio together from each participant and sends the mix to each recipient, after subtracting their own audio from the mix. The Hoolva SDKs sample audio at the highest rate supported by the device and browser, up to a maximum of 48kHz. We use the Opus codec to encode audio, with a default bitrate of 32kbps, which can be increased to up to 128kbps stereo and 64kbps mono.
+
+### Video
+The media service acts as a Selective Forwarding Unit (SFU) using a publish and subscribe model. Each participant can publish one video source, up to a total of 500 simultaneous videos per meeting. The Hoolva SDK for JavaScript supports video resolutions up to 1280×720 at 30 frames per second without simulcast, and 15 frames per second with simulcast. The Hoolva SDK for iOS and Android support video resolutions up to 1280×720 and 15 frames per second, however the actual framerate and resolution is automatically managed by the Hoolva SDK.
+
+When active, video simulcast sends each video stream in three different resolutions and bitrates. Clients which are bandwidth constrained automatically subscribe to the lower bitrate stream. Video encoding and decoding uses hardware acceleration where available to improve performance.
+
+### Data messages
+In addition to audio and video content, meeting participants can send each other real-time data messages of up to 2 KB each. You can use data messages to implement custom meeting features such as whiteboarding, chat, real-time emoji reactions, and application-specific floor control signaling.
+
+### Content sharing
+The client application can share audio and video content, such as screen captures or media files. Content sharing supports pre-recorded content video up to 1280×720 at 15 frames per second, and audio up to 48kHz at 64kbps. Screen capture for content sharing is supported up to 15 frames per second, but may be limited by the capabilities of the device and browser.
+
+## System requirements
+
+The following system requirements apply to applications created with the Hoolva SDK.
+
+|   Browser                  |  Supported versions              |  Notes                          |
+|                       ---  |                             ---  |                            ---  |
+|  Mozilla Firefox           |     75 and later                 |                                 |   
+|  Google Chrome             |     78 and later                 |                                 |   
+|  Chromium-based Edge       |     79 and later                 |                                 |     
+|  Chromium-based Electron   |     7 and later                  |With Chrome version 78 and later |
+|  Opera                     |     66 and later                 |                                 |
+|   Safari                   |     13 and later                 |                                 |
+
+Hoolva SDK for React Native
+
+- iOS version 13 and later
+- Android OS version 8 and later, ARM and ARM64 architecture
+
+## Service quotas
+
+This table that lists the resources and quotas available for Hoolva SDK meetings.
+
+|  Resource Browser                                                        |  Quota                                                    |  Adjustable                  |
+|                                                                     ---  |                                                      ---  |                         ---  |
+|  Active Meetings per account                                             |     1000                                                  |  Yes                         |   
+|  Maximum Number of participants per meeting \(includes audio and video)  |     500                                                   |  No                          |   
+|  Content shares per meeting                                              |     2                                                     |  No                          |     
+|  API Rate                                                                |     10 requests per second (RPS) with a burst of 20 RPS. |  Yes                         |
+                                                                                                                     
+ ## Integrating with a client library
+
+ Before you can build real-time meeting clients with the Hoolva SDK, you must integrate your client application with an Hoolva SDK client library. The following client libraries are available:
+
+ - [Hoolva SDK client library for JavaScript (NPM)](https://www.npmjs.com/package/hdmeet) – A JavaScript library with TypeScript type definitions that helps you build Hoolva SDK applications in WebRTC-enabled browsers.
+ -  Hoolva SDK client library for React Native – A react-native library that helps you build Hoolva SDK applications on supported iOS and Android devices.
+
+ To learn how to integrate your client application with the Hoolva SDK, see the actions in the client library README.md. Use the demos to learn how to build specific media components for your application.
+ 

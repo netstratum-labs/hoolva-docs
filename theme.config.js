@@ -1,12 +1,12 @@
 export default {
   github: 'https://github.com/shuding/nextra',
   docsRepositoryBase: 'https://github.com/shuding/nextra/blob/master',
-  titleSuffix: ' – Nextra',
+  titleSuffix: ' – Hoolva SDK',
   logo: (
     <>
-      <span className="mr-2 font-extrabold hidden md:inline">Nextra</span>
+      <span className="mr-2 font-extrabold hidden md:inline">Hoolva SDK</span>
       <span className="text-gray-600 font-normal hidden md:inline">
-        The Next.js Static Site Generator
+        Documentation
       </span>
     </>
   ),
@@ -28,31 +28,31 @@ export default {
       <link
         rel="apple-touch-icon"
         sizes="180x180"
-        href="/apple-icon-180x180.png"
+        href="/fav"
       />
       <link
         rel="icon"
         type="image/png"
         sizes="192x192"
-        href="/android-icon-192x192.png"
+        href="/fav-icon-2.png"
       />
       <link
         rel="icon"
         type="image/png"
         sizes="32x32"
-        href="/favicon-32x32.png"
+        href="/fav-icon-2.png"
       />
       <link
         rel="icon"
         type="image/png"
         sizes="96x96"
-        href="/favicon-96x96.png"
+        href="/fav-icon-2.png"
       />
       <link
         rel="icon"
         type="image/png"
         sizes="16x16"
-        href="/favicon-16x16.png"
+        href="/fav-icon-2.png"
       />
       <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
     </>
@@ -62,6 +62,6 @@ export default {
   nextLinks: true,
   footer: true,
   footerEditLink: 'Edit this page on GitHub',
-  footerText: <>MIT {new Date().getFullYear()} © Nextra.</>,
-  unstable_faviconGlyph: '👋',
+  footerText: <>MIT {new Date().getFullYear()} © Hoolva SDK.</>,
+  unstable_faviconGlyph: '',
 }

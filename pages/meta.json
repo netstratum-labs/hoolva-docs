@@ -1,7 +1,14 @@
 {
   "index": "Introduction",
-  "get-started": "Get Started",
+  "get-started": "Getting Started",
+  "meetingevents": "Meeting Events",
+  "meetingmethods": "Meeting Methods",
   "features": "Features",
+  "general-information": "General information",
+  "troubleshooting": "Troubleshooting",
+  "usecases": "Use cases",
   "themes": "Themes",
-  "advanced": "Advanced"
+  "advanced": "Advanced",
+  "changelogs": "Changelogs"
+  
 }
