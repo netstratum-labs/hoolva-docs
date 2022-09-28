@@ -5,3 +5,259 @@ The HDMeet SDK sends meeting lifecycle events, which you can use to trigger noti
 Updating metadata when a participant joins or leaves HDMeet SDK meeting.
 Implementing push notifications or rosters for HDMeet SDK meetings.
 Measuring the usage of video and content sharing in HDMeet SDK meetings
+
+## Room State
+
+ **roomstate** : state of the current meeting will be passed through the event listener. possible room states are open, locked, and closed. event is fired after calling startMeetingSession.
+
+```json
+{
+  "version": "0",
+  "source": "aws.chime",
+  "account": "111122223333",
+  "id": "12345678-1234-1234-1234-111122223333",
+  "region": "us-east-1",
+  "detail-type": "Chime Meeting State Change",
+  "time": "yyyy-mm-ddThh:mm:ssZ",
+  "resources": []
+  "detail": {
+    "version": "0",
+    "eventType": "chime:MeetingStarted",
+    "timestamp": 12344566754,
+    "meetingId": "87654321-4321-4321-1234-111122223333",
+    "externalMeetingId": "mymeeting",
+    "mediaRegion": "us-east-1"
+  }
+}
+
+```
+
+## Join Meeting
+
+**joinMeeting** – this event is received when all the necessary things are done on SDK to join into a meeting.
+
+```json
+
+{
+  "version": "0",
+  "source": "aws.chime",
+  "account": "111122223333",
+  "id": "12345678-1234-1234-1234-111122223333",
+  "region": "us-east-1",
+  "detail-type": "Chime Meeting State Change",
+  "time": "yyyy-mm-ddThh:mm:ssZ",
+  "resources": []
+  "detail": {
+    "version": "0",
+    "eventType": "chime:MeetingStarted",
+    "timestamp": 12344566754,
+    "meetingId": "87654321-4321-4321-1234-111122223333",
+    "externalMeetingId": "mymeeting",
+    "mediaRegion": "us-east-1"
+  }
+}
+```
+## Participant List
+
+**participantList** – event is received when a participant joins into a meeting
+
+```json
+
+{
+audio: false
+audioPeer: null
+audioSdp: null
+audioSender: null
+audioStream: null
+audio_room: false
+host: false
+isPublisher: false
+meetingConfig: MeetingConfiguration 
+mixedAudio: null
+name: "qwerty"
+participant_id:"3056378e-ce4c-4bc3-b581-1bb512afae2d"
+pause: undefined
+raiseHand: false
+screenshare: false
+screensharePeer: null
+screenshareSdp: null
+screenshareSender: null
+screenshareStream: null
+speaking: false
+video: true
+videoPeer: null
+videoSdp: null
+videoSender: null
+videoStream: null
+}
+```
+
+## Stream Received
+
+**streamReceived** – event is received when a stream is ready for a participant in SDK side. stream can be binded after receiving this event for corresponding participant
+
+```json
+{
+participant_id:"c0dcb75d-d056-4bd3-bdc5-e62e617863c7"
+state: true
+type: "video"
+}
+```
+
+## Network Stream Lost
+
+**networkStreamLost** – event is received when a network stream is lost
+
+```json
+{
+        stream: video,
+        value: 54
+}
+```
+
+## People Waiting
+
+**peopleWaiting** – event is received when a person is on waiting room
+
+```json
+{
+name: "qwerty"
+state: true
+transaction_id:"e86c7878-4a55-44ec-d030-6074983adbd6"
+}
+```
+## Remove From Waiting List
+
+**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected
+
+```json
+{
+transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
+}
+```
+
+## Pause Video
+
+**pauseVideo** – event is received as response to pauseSubscriberVideo.
+
+```json
+{
+participants:['d61ce814-3916-4554-b068-80b29b898609']
+pause: true 
+}
+```
+## Update Participant List
+
+**updateparticipantlist**– event is received when the participant list changes, ie video, audio is turned on/off. participant is speaking or not etc.
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: false
+type: "video"
+}
+```
+
+## Host Mute or Unmute
+
+**hostMuteorUnmute** – event is received for the participant who is requested to mute/unmute mic from host
+
+```json
+{
+participant_id: "67d1260e-de97-4e7a-b296-6afbb16a80cd"
+state: true
+}
+```
+
+## Group Chat
+**groupChat** – event is received when a new groupChat chat message has been received
+
+```json
+{
+chatType: "delivered"
+message: "hi"
+participant_id: "1fd390c9-d2c8-4863-8b4c-b1676f155b4e"
+participant_name: "qwerty"
+seen: false
+timestamp: 1655720436106
+title: "text"
+type: "text"
+}
+```
+
+## Private Chat
+
+**privateChat** – event is received when a new privateChat chat message has been received
+
+```json
+{
+chatType: "delivered"
+message: "what's up"
+oppo: "81667683-945d-4427-ab23-93e5c5fe491c"
+receiver: "900a02df-9295-40d2-ac63-22972a626304"
+seen: false
+sender: "81667683-945d-4427-ab23-93e5c5fe491c"
+timestamp: 1655720723894
+title: "text"
+type: "text"
+}
+```
+
+## host Camera On Off
+
+**hostCameraOnOff** – event is received for the participant who is requested to mute/unmute camera from host
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true
+}
+```
+
+## Host Kick Out
+
+**hostKickOut** – event is received for the participant who is kicked out of the meeting by host
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true	
+}
+```
+
+## Device List Modified
+
+**deviceListModified** – event is received when device list or current device changes
+
+
+```json
+currentDevice: {audioInput: 'default', audioOutput: 'default', videoInput: '59ad539e11bcf5415ffe028e51c2aaeb666323ab4a12e0d94e0debbc234090c5'}
+reason: "initial_state"
+title: "currentdevice"
+
+or 
+
+
+reason: "A device was added/removed"
+title: "device_modified"
+
+```
+
+## Leaved Participant
+
+**leavedParticipant** – event is received when a participant leaves the meeting
+```json
+9f182432-fa3d-43df-8892-37677f5e3a94 
+```
+
+## Host End For All
+
+**hostEndForAll** – event is received when host ends the meeting for all
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true
+}
+```
+

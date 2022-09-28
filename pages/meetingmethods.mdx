@@ -1,3 +1,368 @@
 # Meeting Methods
 
 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+
+## userLogin
+```js
+userLogin ( userName : string, password : string  ) :   Promise <UserDataModel | HttpError>
+```
+Logs in using the given username and password
+
+**Parameters**
+- **userName** : string 
+- **password** : string
+
+**Returns** `Promise <UserDataModel | HttpError>`
+
+## User Logout
+```js
+userLogout ( ) :  Promise <any>
+```
+Logs out and clear an active session.
+
+**Returns** `Promise <any>`
+
+## Claim Login Session
+```js
+claimLoginSession ( token : string  ) :  void
+```
+You can use this to resume your login session if the token is available. This helps you to avoid using userLogin every time.
+
+**Parameters**
+ - **token** : string 
+ **Returns**  `void`
+
+## Forgot Password
+```js
+forgotPassword ( email : string  ) :  any
+```
+Resets the password by sending a resend link to the registered email address.
+
+**Parameters**
+ - email : string 
+
+**Returns**  `any`
+
+## Add Event Listener
+```js
+addEventListener ( handler : string, eventListener : ( data: ObserverEventType ) => void ) :  void
+```
+You can add an event listener to capture the events coming from the SDK. This should be declared and used before any other functions
+
+**Parameters**
+- handler : string, 
+- eventListener : ( data: ObserverEventType ) => void
+
+**Returns**  void
+
+## Pre Auth
+```js
+preAuth ( meetingId : number, password : string, sname : string  ) :  Promise<MeetingSessionConfiguration>
+```
+You can use this function to enter a meeting id and password. This should be used before startMeetingSession.
+
+**Parameters**
+- meetingId : number, 
+- password : string, 
+- sname : string 
+
+**Returns**  Promise<MeetingSessionConfiguration
+
+## Scheduled Meeting Create
+```js
+scheduledMeetingCreate ( auto_record : boolean, dial_in : boolean, e2ee : boolean, expiry_date : number, join_mode : string, name : string, password : string, pin : number, record_mode : string, recurrence : boolean, recurrence_date : number, recurrence_repeat : number, recurrence_type : string, recurrence_weekdays : , start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+```
+Schedules a meeting with set parameters. You can pass the parameters to create a more customized meeting. This will only schedule the meeting for a later date and time. Scheduled meetings are valid for 24 hours from the meeting start date & time. Current e2e is an experimental feature.
+
+**Parameters**
+- auto_record : boolean, 
+- dial_in : boolean, 
+- e2ee : boolean, 
+- expiry_date : number, 
+- join_mode : string, 
+- name : string, 
+- password : string, 
+- pin : number, 
+- record_mode : string, 
+- recurrence : boolean, 
+- recurrence_date : number, 
+- recurrence_repeat : number, 
+- recurrence_type : string, 
+- recurrence_weekdays : , 
+- start_date_time : number, 
+- time_zone : string 
+
+**Returns**   Promise <HttpError | MeetingCreateModel>
+
+## C reateInstant Meeting
+```js
+createInstantMeeting ( auto_record : boolean, dial_in : boolean, e2ee : boolean, join_mode : , name : string, password : string, pin : number, recurrence : boolean, start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+```
+Creates a meeting with editable parameters. If parameters are not edited, creates a meeting with default settings. The difference here when comparing with scheduledMeetingCreate is that createInstantMeeting will create a meeting and join to it. This is very useful to create and join a meeting instantly.
+**Parameters**
+- auto_record : boolean, 
+- dial_in : boolean, 
+- e2ee : boolean, 
+- join_mode : , 
+- name : string, 
+- password : string, 
+- pin : number, 
+- recurrence : boolean, 
+- start_date_time : number, 
+- time_zone : string 
+
+Returns  `Promise <HttpError | MeetingCreateModel>`
+
+## Start Meeting Session
+```js
+startMeetingSession ( audio : boolean, video : boolean, displayName : string  ) :  Promise<void>
+Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth)
+```
+**Parameters**
+ - audio : boolean, 
+ - video : boolean, 
+ - displayName : string 
+
+Returns  `Promise<void>`
+
+## Meeting List
+```js
+meetingList ( curr_date_time : number  ) :   Promise <HttpError | MeetingListModel>
+```
+Shows a list of upcoming meetings from a given time.
+
+
+**Parameters**
+ - curr_date_time : number 
+
+Returns   `Promise <HttpError | MeetingListModel>`
+
+## Meeting Invite
+```js
+meetingInvite ( meeting_uuid : string  ) :   Promise <HttpError | MeetingInviteModel>
+```
+Returns the meeting invite URL for easy sharing.
+
+
+**Parameters**
+ - meeting_uuid : string 
+
+Returns   `Promise <HttpError | MeetingInviteModel>`
+
+## Mute Stream Action
+```js
+muteStreamAction ( participant_id : string, stream : string, mute : string  ) :  void
+```
+Mutes/unmutes the audio and starts/stops the video of the participant. This is to manage the self microphone and camera. You cannot manage other participant's audio or video with this message.
+
+
+**Parameters**
+ - participant_id : string, 
+ - stream : string, 
+ - mute : string 
+
+Returns  `void`
+
+## Content Share Action
+```js
+contentShareAction ( audio : boolean, video : boolean  ) :  void
+```
+You can start a screen share using this function. You can pass audio and video as true to start the screenshare. To stop an on going screenshare you can pass false to audio and video. You cannot start contentShare with passing only audio as true and video as false but you can pass video as true and audio as false.
+
+
+**Parameters**
+ - audio : boolean, 
+ - video : boolean 
+
+Returns  `void`
+
+## Raise Hand Action
+```js
+raiseHandAction ( raise : boolean  ) :  void
+```
+Raises/lowers hand to notify other participants.
+
+**Parameters**
+ - raise : boolean 
+
+Returns  `void`
+
+## Send Message
+```js
+sendMessage ( message : , type : string, title : string, participant_id ? : string  ) :  Promise<void>
+```
+Sends texts/files to other participants. This can be used to implement in-meeting chat functionalities. The messages and files transferred will be valid till the end of that meeting session.
+
+
+**Parameters**
+ - message : , 
+ - type : string, 
+ - title : string, 
+- optional participant_id : string 
+
+Returns  `Promise<void>`
+
+## List Available Devices
+```js
+listAvailableDevices ( ) :  Promise<ListDeviceType>
+```
+Shows a list of available input and output devices to choose from
+
+Returns  `Promise<ListDeviceType>`
+
+## Switch Devices
+```js
+switchDevices ( deviceId : string, device : string, bindId ? : string  ) :  void
+```
+Allows participants to change their input or output devices to a new one.
+
+**Parameters**
+ - deviceId : string, 
+ - device : string, 
+ - optional bindId : string 
+
+Returns  `void`
+
+## Stream Bind
+```js
+streamBind ( stream : string, participant_id : string, tile_id : string  ) :  void
+```
+Binds participant’s Audio/video/screenshare to an element. Use this only after elements has been created.
+
+**Parameters**
+ - stream : string, 
+ - participant_id : string, 
+ - tile_id : string 
+
+Returns  `void`
+
+## Stream Unbind
+```js
+streamUnbind ( tile_id : string  ) :  void
+```
+Unbinds streams from an element. Use this only after elements has been created.
+
+**Parameters**
+ - tile_id : string 
+
+Returns  `void`
+
+## Pause Subscriber Video
+```js
+pauseSubscriberVideo ( participantsId : string[array]  pause : boolean  ) :  void
+```
+You can pause the video of a remote participant in a meeting. This will only affect your view the actual video will not be paused. This pause is only applicable to the person who is calling this function. It will not affect other participants or the person who is sending his video. This is useful to pause the video of a participant who is not in your current view or when the user’s bandwidth is unstable.
+
+**Parameters**
+ - participantsId : string[array]  
+ - pause : boolean 
+
+Returns  `void`
+
+## Remote Participant Video Quality
+```js
+remoteParticipantVideoQuality ( participantId : string[array]  bitrate : number, framerate : number  ) :  void
+```
+You can set the quality of the remote participants' video you are receiving. Configurations for bitrate and frame rates 0 ,1 ,2 are available.
+
+**Parameters**
+ - participantId : string[array]  
+ - bitrate : number, 
+ - framerate : number 
+
+Returns  `void`
+
+## Host Allow Participants
+```js
+hostAllowParticipants ( transaction_id : string[array]  allow : boolean  ) :  void
+```
+Allows hosts to give participants the permission to enter a locked meeting.
+
+**Parameters**
+- transaction_id : string[array]  
+ - allow : boolean 
+
+Returns  `void`
+
+## Host Lock Meeting Action
+```js
+hostLockMeetingAction ( hostlock : boolean  ) :  void
+```
+Allows hosts to lock the meeting so that participants cannot enter the meeting without host’s permission. This is useful to lock the meeting while the meeting is in progress.
+
+**Parameters**
+ - hostlock : boolean 
+
+Returns  `void`
+
+## Host Manage Raise Hand
+```js
+hostManageRaiseHand ( participant_id : string  ) :  void
+```
+Gives host ability to lower a participant’s raised hand
+
+**Parameters**
+ - participant_id : string 
+
+Returns  `void`
+
+## Host Manage Participant Stream
+```js
+hostManageParticipantStream ( participant_id : string, mute : boolean, stream :   ) :  void
+```
+Gives hosts the ability to mute on/off a participant’s audio and video.
+
+**Parameters**
+ - participant_id : string, 
+ - mute : boolean, 
+ - stream :  
+
+Returns  `void`
+
+## Host Manage All Participants Audio
+```js
+hostManageAllParticipantsAudio ( hostMute : boolean  ) :  void
+```
+Gives hosts the ability to turn on/off all participant’s audio at once. Require participant’s permission to turn on
+
+**Parameters**
+ - hostMute : boolean 
+
+Returns  `void`
+
+## Host End Meeting
+```js
+hostEndMeeting ( ) :  void
+```
+Gives hosts the ability to end the meeting for all participants
+
+Returns  `void`
+
+## Host Remove Participant
+```js
+hostRemoveParticipant ( participant_id : string  ) :  void
+```
+Gives hosts the ability to remove/kick participants out from the meeting. This participant can join back again if they wish to.
+
+**Parameters**
+ - participant_id : string 
+
+Returns  `void`
+
+## Leave Meeting Session
+```js
+leaveMeetingSession ( ) :  void
+```
+Leaves an on-going meeting.
+
+Returns  `void`
+
+
+
+
+
+
+
+
+
+
