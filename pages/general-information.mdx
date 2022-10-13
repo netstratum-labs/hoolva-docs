@@ -2,17 +2,69 @@
 
 ## How to Optimize Video quality for bandwidth
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+Often times, bandwidth is unpredictable. Bandwidth congestion can occur when user suddenly starts a streaming service or download a file from the internet. Sudden hike in the bandwidth usage may cause network congestion and results in poor meeting experience. Optimizing video quality for available bandwidth is very important for ensuring quality meetings.
+
+HDmeet SDK provides 3 different quality levels (streams) for remote participants video quality
+
+At any time, client can send below message to switch between video quality
+Sample message :
+```json
+meetingsession.remoteParticipantVideoQuality([participant_id], bit_rate, quality)
+```
+
+
+| Bit Rate      | Bandwidth (KBps)| Quality | Quality Type    |
+| :---          |    :----:       | :----:  |          ---:   |
+| 0             | 500             | 0       | Low             |
+| 1             | 1500            | 1       | Medium (SD)     |
+| 2             | 2500            | 2       | High (HD)       |
+
+
+Another use case can be client application can be of different UI. For eg, your application might have a speaker only view where you show only the person who speaks and other videos are hidden from the view. In another case you might wanted to show video of all participants. Pausing and resuming a video stream is a life saver here. 
+
+Hoolva SDK support pausing a video stream and resume the stream functionality. Client can use :
+```json
+meetingsession.pauseSubscriberVideo([participantID_1,participantID_2],true) //for pause
+```
+```json
+meetingsession.pauseSubscriberVideo([participantID_1,participantID_2],false) //for unpause
+```
+
+Bandwidth optimization is current not supported in react-native sdk
+
 
 ## How to start a screen share in the meeting
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+Once the user is in the meeting he can initiate screen share with the below message
 
-## How to create an API key for different environments
-
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+meetingsession.contentShareAction(audio, video, options)
 
 
-## How to do cloud recording
+|                                         |                 | 
+| :---                                    |    :----:       | 
+| audio                                   | true: share the system audio along with screen share , false: will not share the system audio along with the screen share  |                              
+| video                                   | true: shares the screen. This value also denotes that the client is starting a screen share.                                | 
+| options (only for electron)             | chromeMediaSourceId: to pass the id of a specific open window
+                                                                                                                                             | 
+ 
+To stop a screen share session, client should send audio:false and video:false
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+Audio only sharing is currently not supported in this version of the SDK which means, video:false and audio: true combination won’t work at this time.
+
+For electron, we have to follow the below steps as well.
+```json
+// In the main process.
+const { desktopCapturer } = require('electron')
+
+desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+  for (const source of sources) {
+    if (source.name === 'Electron') {
+      mainWindow.webContents.send('SET_SOURCE', source.id)
+      return
+    }
+  }
+})
+```
+Screen sharing is not supported in this version of react-native sdk
+
+

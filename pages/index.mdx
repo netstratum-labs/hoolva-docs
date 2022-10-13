@@ -24,11 +24,17 @@ An ephemeral resource identified by a unique Meeting ID. The Meeting ID is place
 ### Participant
 A meeting participant that is identified by a unique participant ID. Participants may freely join and leave meetings using a client application built with an Hoolva SDK client library.
 
-### Observer
+### Listener
 An observer is similar to an event listener that will trigger when a message is received. For convenience, we have grouped the Observer which throw similar messages. Eg, A participant observer will throw messages connected to the participants in the meeting.
 
-### API Key
+### Participant_id
 A unique token is assigned to each participant. Participants use the join token to authenticate with the media service group.
+
+_System requirement_:
+
+React Native v 0.69
+
+React-native-webrtc - 0.100.6
 
 ## Architecture
 The following list describes how the different components of the Hoolva SDK architecture work together to support meetings and participants, audio, video, chat, and content sharing.
@@ -83,7 +89,7 @@ This table that lists the resources and quotas available for Hoolva SDK meetings
 
  Before you can build real-time meeting clients with the Hoolva SDK, you must integrate your client application with an Hoolva SDK client library. The following client libraries are available:
 
- - [Hoolva SDK client library for JavaScript (NPM)](https://www.npmjs.com/package/hdmeet) – A JavaScript library with TypeScript type definitions that helps you build Hoolva SDK applications in WebRTC-enabled browsers.
+ - [Hoolva SDK client library for JavaScript (NPM)](https://www.npmjs.com/package/hdmeet) – A JavaScript library with TypeScript type definitions that helps you build Hoolva SDK applications in WebRTC-enabled browsers and Electron based desktop applications.
  -  Hoolva SDK client library for React Native – A react-native library that helps you build Hoolva SDK applications on supported iOS and Android devices.
 
  To learn how to integrate your client application with the Hoolva SDK, see the actions in the client library README.md. Use the demos to learn how to build specific media components for your application.

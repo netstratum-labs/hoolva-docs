@@ -1,0 +1,756 @@
+
+Install the library from NPM
+
+```json
+npm install react-native-hdmeet or yarn add react-native-hdmeet
+```
+
+initial configuration
+
+Add the package react-native-webrtc in your project since it is a dependency package for the SDK
+```json
+npm install react-native-webrtc or yarn add react-native-webrtc
+```
+
+Add this line of code in android/gradle.properties in order to avoid WebRTC runtime problem on some devices
+```json
+android.enableDexingArtifactTransform.desugaring=false
+```
+
+Meeting session
+
+Create a meeting session in your client application.
+```json
+import { MeetingSession } from "react-native-hdmeet";
+```
+
+After installing the package react-native-hdmeet you have to create an object of a class MeetingSession to use the available methods in SDK.
+```json
+const meetingsession = new MeetingSession(
+apiKey, 
+logLevel,
+environmentLevel
+);
+```
+
+apikey -  It is a unique identifier to authorize your client with Hoolva server. You will get the api key from developer portal.
+
+logLevel - Specifies log level to be shown from the SDK. Available values are -
+
+| values        |Description                                               | 
+| :---          |    :----:                                                | 
+| 1             | Shows all logs including warnings, errors, info and logs |                                                                                                                    
+| 2             | Shows logs including warnings, errors and info           |                     
+| 3             | Shows logs including warnings and errors                 |                      
+| 4             | Shows error logs only                                    |
+| 5             | No logs from SDK, logs will be turned off                |
+
+_environmentLevel_ - specifies which servers should hdmeet connects to. Available environmentLevels are sandbox and production
+
+_environmentLevel_ - specifies which servers should hdmeet connects to. Available environmentLevels are sandbox and production
+
+After creating an object of “MeetingSession” it can be used to call the methods available in the SDK. Some functions triggers Eventlistners which are provided by the SDK. In order to get these events it needs to be added before calling any SDK methods.
+
+Eventlistners are used to capture asynchronous events occurred in SDK. Eventlistners consist of a key and a callback.
+ 
+```json
+Meetingsession.addEventListener( key , callback)
+```
+Available Eventlisteners are documented under Meeting events 
+
+Note - To avoid unexpected behavior of the SDK it is recommended to call the eventlistener before the calling the SDK methods.
+
+Sample use case
+
+To authenticate a meeting we can use preAuth inside the Meetingsession
+```json
+ Meetingsession.preAuth( username , password)
+ ```
+All available functions are documented in Meeting Methods 
+
+Binding the streams
+
+When a stream is available, an eventlistener with the key streamReceived is invoked in client side (assuming its already added. Example below,
+
+Returned data is an object which has type stream and participant_id .
+type - specifies which stream is received. available types for streamReceived data are audio, video and screenshare
+stream - contains the stream.
+participant_id - specifies which participant’s stream is received
+
+event listener can be added like below-
+```json
+meetingsession.addEventListener("streamReceived", (data) => {
+       // actions needed to be done after receiving the stream 
+    })
+```
+
+
+The stream can be used in StreamView component which can be imported from react-native-hdmeet to render video/audio/screenshare stream
+```js
+import { StreamView } from "react-native-hdmeet";
+```
+streams can be added into StreamView like this:-
+
+```js
+<StreamView
+      stream={stream}
+    />
+```
+
+| Name          | Type         |  Default   |Description                                                                                                                                             |
+| :---          |    :----:    |    :----:  |      :----:                                                                                                                                                  |
+| mirror        | boolean      |  false     | Indicates whether the video specified by "streamURL" should be mirrored during rendering. Commonly applications choose to mirror the user-facing camera|                                                                           
+| objectFit     | string       | 'contain'  |  Can be contain or cover                                                                                                                               |
+| streamUR      | STRING       |      "     | This is mandatory                                                                                                                                      |
+| zOrder        | number       |     0      | Similarly to zindex                                                                                                                                    |
+
+*WARNING*:  react-native-hdmeet doesn’t work on Chrome debugger mode due to the usage of sync methods in react-native-webrtc. To know more about troubleshooting please read - How to debug your react-native application 
+
+
+
+## Meeting Events
+
+
+The HDMeet SDK sends meeting lifecycle events, which you can use to trigger notifications and initiate downstream workflows. Some examples of using meeting events include:
+
+Updating metadata when a participant joins or leaves HDMeet SDK meeting.
+Implementing push notifications or rosters for HDMeet SDK meetings.
+Measuring the usage of video and content sharing in HDMeet SDK meetings
+
+### Room State
+
+ **roomstate** : state of the current meeting will be passed through the event listener. possible room states are open, locked, and closed. event is fired after calling startMeetingSession.
+
+```json
+{
+  "version": "0",
+  "source": "aws.chime",
+  "account": "111122223333",
+  "id": "12345678-1234-1234-1234-111122223333",
+  "region": "us-east-1",
+  "detail-type": "Chime Meeting State Change",
+  "time": "yyyy-mm-ddThh:mm:ssZ",
+  "resources": [],
+  "detail": {
+    "version": "0",
+    "eventType": "chime:MeetingStarted",
+    "timestamp": 12344566754,
+    "meetingId": "87654321-4321-4321-1234-111122223333",
+    "externalMeetingId": "mymeeting",
+    "mediaRegion": "us-east-1"
+  }
+}
+
+```
+
+### Join Meeting
+
+**joinMeeting**  this event is received when all the necessary things are done on SDK to join into a meeting.
+
+```json
+
+{
+  "version": "0",
+  "source": "aws.chime",
+  "account": "111122223333",
+  "id": "12345678-1234-1234-1234-111122223333",
+  "region": "us-east-1",
+  "detail-type": "Chime Meeting State Change",
+  "time": "yyyy-mm-ddThh:mm:ssZ",
+  "resources": []
+  "detail": {
+    "version": "0",
+    "eventType": "chime:MeetingStarted",
+    "timestamp": 12344566754,
+    "meetingId": "87654321-4321-4321-1234-111122223333",
+    "externalMeetingId": "mymeeting",
+    "mediaRegion": "us-east-1"
+  }
+}
+```
+### Participant List
+
+**participantList** – event is received when a participant joins into a meeting
+
+```json
+
+{
+audio: false
+audioPeer: null
+audioSdp: null
+audioSender: null
+audioStream: null
+audio_room: false
+host: false
+isPublisher: false
+meetingConfig: MeetingConfiguration 
+mixedAudio: null
+name: "qwerty"
+participant_id:"3056378e-ce4c-4bc3-b581-1bb512afae2d"
+pause: undefined
+raiseHand: false
+screenshare: false
+screensharePeer: null
+screenshareSdp: null
+screenshareSender: null
+screenshareStream: null
+speaking: false
+video: true
+videoPeer: null
+videoSdp: null
+videoSender: null
+videoStream: null
+}
+```
+
+### Stream Received
+
+**streamReceived** – event is received when a stream is ready for a participant in SDK side. stream can be binded after receiving this event for corresponding participant
+
+```json
+{
+participant_id:"c0dcb75d-d056-4bd3-bdc5-e62e617863c7"
+state: true
+type: "video"
+}
+```
+
+### Network Stream Lost
+
+**networkStreamLost** – event is received when a network stream is lost
+
+```json
+{
+        stream: video,
+        value: 54
+}
+```
+
+### People Waiting
+
+**peopleWaiting** – event is received when a person is on waiting room
+
+```json
+{
+name: "qwerty"
+state: true
+transaction_id:"e86c7878-4a55-44ec-d030-6074983adbd6"
+}
+```
+### Remove From Waiting List
+
+**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected
+
+```json
+{
+transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
+}
+```
+
+### Remove From Waiting List
+
+**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected
+
+```json
+{
+transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
+}
+```
+
+### Pause Video
+
+**pauseVideo** – event is received as response to pauseSubscriberVideo.
+
+```json
+{
+participants:['d61ce814-3916-4554-b068-80b29b898609']
+pause: true 
+}
+```
+### Update Participant List
+
+**updateparticipantlist**– event is received when the participant list changes, ie video, audio is turned on/off. participant is speaking or not etc.
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: false
+type: "video"
+}
+```
+
+### Host Mute or Unmute
+
+**hostMuteorUnmute** – event is received for the participant who is requested to mute/unmute mic from host
+
+```json
+{
+participant_id: "67d1260e-de97-4e7a-b296-6afbb16a80cd"
+state: true
+}
+```
+
+### Group Chat
+**groupChat** – event is received when a new groupChat chat message has been received
+
+```json
+{
+chatType: "delivered"
+message: "hi"
+participant_id: "1fd390c9-d2c8-4863-8b4c-b1676f155b4e"
+participant_name: "qwerty"
+seen: false
+timestamp: 1655720436106
+title: "text"
+type: "text"
+}
+```
+
+### Private Chat
+
+**privateChat** – event is received when a new privateChat chat message has been received
+
+```json
+{
+chatType: "delivered"
+message: "what's up"
+oppo: "81667683-945d-4427-ab23-93e5c5fe491c"
+receiver: "900a02df-9295-40d2-ac63-22972a626304"
+seen: false
+sender: "81667683-945d-4427-ab23-93e5c5fe491c"
+timestamp: 1655720723894
+title: "text"
+type: "text"
+}
+```
+
+### Host Camera On Off
+
+**hostCameraOnOff** – event is received for the participant who is requested to mute/unmute camera from host
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true
+}
+```
+
+
+### Host Kick Out
+
+**hostKickOut** – event is received for the participant who is kicked out of the meeting by host
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true	
+}
+```
+
+### Device List Modified
+
+**deviceListModified** – event is received when device list or current device changes
+
+
+```json
+currentDevice: {audioInput: 'default', audioOutput: 'default', videoInput: '59ad539e11bcf5415ffe028e51c2aaeb666323ab4a12e0d94e0debbc234090c5'}
+reason: "initial_state"
+title: "currentdevice"
+
+or 
+
+
+reason: "A device was added/removed"
+title: "device_modified"
+
+```
+
+### Left Participant
+
+**LeftParticipant** – event is received when a participant leaves the meeting
+```json
+{
+      participant_id: “9f182432-fa3d-43df-8892-37677f5e3a94  ”
+      name: “Jinoy James”
+}
+
+```
+
+### Host End For All
+
+**hostEndForAll** – event is received when host ends the meeting for all
+
+```json
+{
+participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
+state: true
+}
+```
+
+## Meeting Methods
+
+
+### userLogin
+```json
+userLogin ( userName : string, password : string  ) :   Promise <UserDataModel | HttpError>
+```
+Logs in using the given username and password
+
+**Parameters**
+- **userName** : string 
+- **password** : string
+
+**Returns** `Promise <UserDataModel | HttpError>`
+
+### User Logout
+```json
+userLogout ( ) :  Promise <any>
+```
+Logs out and clear an active session.
+
+**Returns** `Promise <any>`
+
+### Claim Login Session
+```json
+claimLoginSession ( token : string  ) :  void
+```
+You can use this to resume your login session if the token is available. This helps you to avoid using userLogin every time.
+
+**Parameters**
+ - **token** : string 
+ **Returns**  `void`
+
+### Forgot Password
+```json
+forgotPassword ( email : string  ) :  any
+```
+Resets the password by sending a resend link to the registered email address.
+
+**Parameters**
+ - email : string 
+
+**Returns**  `any`
+
+### Add Event Listener
+```json
+addEventListener ( handler : string, eventListener : ( data: ObserverEventType ) => void ) :  void
+```
+You can add an event listener to capture the events coming from the SDK. This should be declared and used before any other functions
+
+**Parameters**
+- handler : string, 
+- eventListener : ( data: ObserverEventType ) => void
+
+**Returns**  `void`
+
+### Pre Auth
+```json
+preAuth ( meetingId : number, password : string, sname : string  ) :  Promise<MeetingSessionConfiguration>
+```
+You can use this function to enter a meeting id and password. This should be used before startMeetingSession.
+
+**Parameters**
+- meetingId : number, 
+- password : string, 
+- sname : string 
+
+**Returns**  `Promise<MeetingSessionConfiguration>`
+
+### Scheduled Meeting Create
+```json
+scheduledMeetingCreate ( auto_record : boolean, dial_in : boolean, e2ee : boolean, expiry_date : number, join_mode : string, name : string, password : string, pin : number, record_mode : string, recurrence : boolean, recurrence_date : number, recurrence_repeat : number, recurrence_type : string, recurrence_weekdays : , start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+```
+Schedules a meeting with set parameters. You can pass the parameters to create a more customized meeting. This will only schedule the meeting for a later date and time. Scheduled meetings are valid for 24 hours from the meeting start date & time. Current e2e is an experimental feature.
+
+**Parameters**
+- auto_record : boolean, 
+- dial_in : boolean, 
+- e2ee : boolean, 
+- expiry_date : number, 
+- join_mode : string, 
+- name : string, 
+- password : string, 
+- pin : number, 
+- record_mode : string, 
+- recurrence : boolean, 
+- recurrence_date : number, 
+- recurrence_repeat : number, 
+- recurrence_type : string, 
+- recurrence_weekdays : , 
+- start_date_time : number, 
+- time_zone : string 
+
+**Returns**   `Promise <HttpError | MeetingCreateModel>`
+
+### Create Instant Meeting
+```json
+createInstantMeeting ( auto_record : boolean, dial_in : boolean, e2ee : boolean, join_mode : , name : string, password : string, pin : number, recurrence : boolean, start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+```
+Creates a meeting with editable parameters. If parameters are not edited, creates a meeting with default settings. The difference here when comparing with scheduledMeetingCreate is that createInstantMeeting will create a meeting and join to it. This is very useful to create and join a meeting instantly.
+
+**Parameters**
+- auto_record : boolean, 
+- dial_in : boolean, 
+- e2ee : boolean, 
+- join_mode : , 
+- name : string, 
+- password : string, 
+- pin : number, 
+- recurrence : boolean, 
+- start_date_time : number, 
+- time_zone : string 
+
+**Returns**  `Promise <HttpError | MeetingCreateModel>`
+
+### Start Meeting Session
+```json
+startMeetingSession ( audio : boolean, video : boolean, displayName : string  ) :  Promise<void>
+Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth)
+```
+**Parameters**
+ - audio : boolean, 
+ - video : boolean, 
+ - displayName : string 
+
+**Returns**  `Promise<void>`
+
+
+### Meeting List
+```json
+meetingList ( curr_date_time : number  ) :   Promise <HttpError | MeetingListModel>
+```
+Shows a list of upcoming meetings from a given time.
+
+
+**Parameters**
+ - curr_date_time : number 
+
+**Returns**   `Promise <HttpError | MeetingListModel>`
+
+### Meeting Invite
+```json
+meetingInvite ( meeting_uuid : string  ) :   Promise <HttpError | MeetingInviteModel>
+```
+Returns the meeting invite URL for easy sharing.
+
+
+**Parameters**
+ - meeting_uuid : string 
+
+**Returns**   `Promise <HttpError | MeetingInviteModel>`
+
+### Mute Stream Action
+```json
+muteStreamAction ( participant_id : string, stream : string, mute : string  ) :  void
+```
+Mutes/unmutes the audio and starts/stops the video of the participant. This is to manage the self microphone and camera. You cannot manage other participant's audio or video with this message.
+
+
+**Parameters**
+ - participant_id : string, 
+ - stream : string, 
+ - mute : string 
+
+**Returns**    `void`
+
+### Content Share Action
+```json
+contentShareAction ( audio : boolean, video : boolean  ) :  void
+```
+You can start a screen share using this function. You can pass audio and video as true to start the screenshare. To stop an on going screenshare you can pass false to audio and video. You cannot start contentShare with passing only audio as true and video as false but you can pass video as true and audio as false.
+
+
+**Parameters**
+ - audio : boolean, 
+ - video : boolean 
+
+**Returns**     `void`
+
+### Raise Hand Action
+```json
+raiseHandAction ( raise : boolean  ) :  void
+```
+Raises/lowers hand to notify other participants.
+
+**Parameters**
+ - raise : boolean 
+
+**Returns**    `void`
+
+### Send Message
+```json
+sendMessage ( message : , type : string, title : string, participant_id ? : string  ) :  Promise<void>
+```
+Sends texts/files to other participants. This can be used to implement in-meeting chat functionalities. The messages and files transferred will be valid till the end of that meeting session.
+
+
+**Parameters**
+ - message : , 
+ - type : string, 
+ - title : string, 
+- optional participant_id : string 
+
+**Returns**     `Promise<void>`
+
+### List Available Devices
+```json
+listAvailableDevices ( ) :  Promise<ListDeviceType>
+```
+Shows a list of available input and output devices to choose from
+
+**Returns**     `Promise<ListDeviceType>`
+
+### Switch Devices
+```json
+switchDevices ( deviceId : string, device : string, bindId ? : string  ) :  void
+```
+Allows participants to change their input or output devices to a new one.
+
+**Parameters**
+ - deviceId : string, 
+ - device : string, 
+ - optional bindId : string 
+
+**Returns**     `void`
+
+### Stream Bind
+```json
+streamBind ( stream : string, participant_id : string, tile_id : string  ) :  void
+```
+Binds participant’s Audio/video/screenshare to an element. Use this only after elements has been created.
+
+**Parameters**
+ - stream : string, 
+ - participant_id : string, 
+ - tile_id : string 
+
+**Returns**     `void`
+
+
+### Stream Unbind
+```json
+streamUnbind ( tile_id : string  ) :  void
+```
+Unbinds streams from an element. Use this only after elements has been created.
+
+**Parameters**
+ - tile_id : string 
+
+**Returns**     `void`
+
+### Pause Subscriber Video
+```json
+pauseSubscriberVideo ( participantsId : string[array]  pause : boolean  ) :  void
+```
+You can pause the video of a remote participant in a meeting. This will only affect your view the actual video will not be paused. This pause is only applicable to the person who is calling this function. It will not affect other participants or the person who is sending his video. This is useful to pause the video of a participant who is not in your current view or when the user’s bandwidth is unstable.
+
+**Parameters**
+ - participantsId : string[array]  
+ - pause : boolean 
+
+**Returns**     `void`
+
+### Remote Participant Video Quality
+```json
+remoteParticipantVideoQuality ( participantId : string[array]  bitrate : number, framerate : number  ) :  void
+```
+You can set the quality of the remote participants' video you are receiving. Configurations for bitrate and frame rates 0 ,1 ,2 are available.
+
+**Parameters**
+ - participantId : string[array]  
+ - bitrate : number, 
+ - framerate : number 
+
+**Returns**     `void`
+
+### Host Allow Participants
+```json
+hostAllowParticipants ( transaction_id : string[array]  allow : boolean  ) :  void
+```
+Allows hosts to give participants the permission to enter a locked meeting.
+
+**Parameters**
+- transaction_id : string[array]  
+ - allow : boolean 
+
+**Returns**     `void`
+
+### Host Lock Meeting Action
+```json
+hostLockMeetingAction ( hostlock : boolean  ) :  void
+```
+Allows hosts to lock the meeting so that participants cannot enter the meeting without host’s permission. This is useful to lock the meeting while the meeting is in progress.
+
+**Parameters**
+ - hostlock : boolean 
+
+**Returns**     `void`
+
+### Host Manage Raise Hand
+```json
+hostManageRaiseHand ( participant_id : string  ) :  void
+```
+Gives host ability to lower a participant’s raised hand
+
+**Parameters**
+ - participant_id : string 
+
+**Returns**     `void`
+
+### Host Manage Participant Stream
+```json
+hostManageParticipantStream ( participant_id : string, mute : boolean, stream :   ) :  void
+```
+Gives hosts the ability to mute on/off a participant’s audio and video.
+
+**Parameters**
+ - participant_id : string, 
+ - mute : boolean, 
+ - stream :  
+
+**Returns**     `void`
+
+### Host Manage All Participants Audio
+```json
+hostManageAllParticipantsAudio ( hostMute : boolean  ) :  void
+```
+Gives hosts the ability to turn on/off all participant’s audio at once. Require participant’s permission to turn on
+
+**Parameters**
+ - hostMute : boolean 
+
+**Returns**     `void`
+
+### Host End Meeting
+```json
+hostEndMeeting ( ) :  void
+```
+Gives hosts the ability to end the meeting for all participants
+
+**Returns**    `void`
+
+### Host Remove Participant
+```json
+hostRemoveParticipant ( participant_id : string  ) :  void
+```
+Gives hosts the ability to remove/kick participants out from the meeting. This participant can join back again if they wish to.
+
+**Parameters**
+ - participant_id : string 
+
+**Returns**     `void`
+
+### Leave Meeting Session
+
+```json
+leaveMeetingSession ( ) :  void
+```
+Leaves an on-going meeting.
+
+**Returns**     `void`
+
+
+
+
+
+

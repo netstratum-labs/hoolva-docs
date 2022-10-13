@@ -14,3 +14,6 @@ select:focus, select:focus{
 h2{
     margin-top: 5.0rem !important;
 }
+.fixed a:last-child{
+    /* display: none; */
+}   
