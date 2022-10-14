@@ -1,7 +1,7 @@
 export default {
-  github: 'https://github.com/shuding/nextra',
-  docsRepositoryBase: 'https://github.com/shuding/nextra/blob/master',
-  titleSuffix: ' – Hoolva SDK',
+  github: 'https://github.com/netstratum-labs/hoolva-docs',
+  docsRepositoryBase: 'https://github.com/netstratum-labs/hoolva-docs',
+  titleSuffix: ' – Hoolva Documentation',
   logo: (
     <>
       <span className="mr-2 font-extrabold hidden md:inline">Hoolva SDK</span>
@@ -65,22 +65,3 @@ export default {
   footerText: <> {new Date().getFullYear()} © Hoolva SDK. All rights reserved</>,
   unstable_faviconGlyph: '',
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
