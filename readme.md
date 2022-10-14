@@ -14,7 +14,7 @@ or
 `
 <br/>
 In your react-native project, install the SDK:
-`npm install react-native-hdmee
+`npm install react-native-hdmeet
 `
 or
 `yarn add react-native-hdmeet
