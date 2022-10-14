@@ -1,5 +1,5 @@
 {
-  "name": "Hoolva docs",
+  "name": "hoolva-teams",
   "version": "1.0.0",
   "description": "Developer documentation - supports web, electron and react-native",
   "main": "index.js",
