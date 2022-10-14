@@ -1,0 +1,19 @@
+.dropDown{
+    z-index: 5555;
+    position: fixed;
+    top: 20px;
+    left: 240px;
+}
+.dropDown select {
+    background-color: white;
+}
+
+select:focus, select:focus{
+    outline: none;
+}
+h2{
+    margin-top: 5.0rem !important;
+}
+.fixed a:last-child{
+    /* display: none; */
+}   

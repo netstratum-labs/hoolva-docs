@@ -1,14 +1,15 @@
 {
-  "name": "nextra",
+  "name": "hoolva-docs",
   "version": "1.0.0",
-  "description": "",
+  "description": "Developer documentation - supports web, electron and react-native",
   "main": "index.js",
+
   "scripts": {
     "dev": "next",
     "start": "next start",
-    "build": "next build"
+    "build": "next build"  
   },
-  "author": "Shu Ding",
+  "author": "hoolva teams",
   "license": "MIT",
   "dependencies": {
     "next": "^12.3.0",
