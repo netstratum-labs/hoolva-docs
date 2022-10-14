@@ -12,6 +12,12 @@ In your frontend project, install the Web SDK:
 or
 `yarn add hdmeet 
 `
+In your frontend project, install the Web SDK:
+`npm install react-native-hdmee
+`
+or
+`yarn add react-native-hdmeet
+`
 ## Need help?
 If you're looking for help, try Developer Support. Priority support is also available with Premier Developer Support plans.
 ​
