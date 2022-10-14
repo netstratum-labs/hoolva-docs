@@ -67,7 +67,7 @@ To authenticate a meeting we can use preAuth inside the Meetingsession
 ```json
  Meetingsession.preAuth( username , password)
  ```
-All available functions are documented in Meeting Methods 
+All available functions are documented in [Meeting methods](/ReactNative#meeting-methods) 
 
 Binding the streams
 
@@ -105,7 +105,7 @@ streams can be added into StreamView like this:-
 | streamUR      | STRING       |      "     | This is mandatory                                                                                                                                      |
 | zOrder        | number       |     0      | Similarly to zindex                                                                                                                                    |
 
-*WARNING*:  react-native-hdmeet doesn’t work on Chrome debugger mode due to the usage of sync methods in react-native-webrtc. To know more about troubleshooting please read - How to debug your react-native application 
+**WARNING** :  react-native-hdmeet doesn’t work on Chrome debugger mode due to the usage of sync methods in react-native-webrtc. To know more about troubleshooting please read [How to debug your react-native application](/troubleshooting#how-to-debug-your-react-native-application)
 
 
 
@@ -120,58 +120,25 @@ Measuring the usage of video and content sharing in HDMeet SDK meetings
 
 ### Room State
 
- **roomstate** : state of the current meeting will be passed through the event listener. possible room states are open, locked, and closed. event is fired after calling startMeetingSession.
+ **roomstate** : roomstate of current meeting will be passed through event listener. possible room states are open, locked and closed. event is fired after calling startMeetingSession.
 
 ```json
-{
-  "version": "0",
-  "source": "aws.chime",
-  "account": "111122223333",
-  "id": "12345678-1234-1234-1234-111122223333",
-  "region": "us-east-1",
-  "detail-type": "Chime Meeting State Change",
-  "time": "yyyy-mm-ddThh:mm:ssZ",
-  "resources": [],
-  "detail": {
-    "version": "0",
-    "eventType": "chime:MeetingStarted",
-    "timestamp": 12344566754,
-    "meetingId": "87654321-4321-4321-1234-111122223333",
-    "externalMeetingId": "mymeeting",
-    "mediaRegion": "us-east-1"
-  }
-}
+
+state : "open"/ "close"/ "lock"
 
 ```
 
 ### Join Meeting
 
-**joinMeeting**  this event is received when all the necessary things are done on SDK to join into a meeting.
+**joinMeeting** : this event is received when all the necessary things are done on SDK to join into a meeting.
 
 ```json
 
-{
-  "version": "0",
-  "source": "aws.chime",
-  "account": "111122223333",
-  "id": "12345678-1234-1234-1234-111122223333",
-  "region": "us-east-1",
-  "detail-type": "Chime Meeting State Change",
-  "time": "yyyy-mm-ddThh:mm:ssZ",
-  "resources": []
-  "detail": {
-    "version": "0",
-    "eventType": "chime:MeetingStarted",
-    "timestamp": 12344566754,
-    "meetingId": "87654321-4321-4321-1234-111122223333",
-    "externalMeetingId": "mymeeting",
-    "mediaRegion": "us-east-1"
-  }
-}
+state : true
 ```
 ### Participant List
 
-**participantList** – event is received when a participant joins into a meeting
+**participantList** – event is received when a participant joins into a meeting.
 
 ```json
 
@@ -206,13 +173,23 @@ videoStream: null
 
 ### Stream Received
 
-**streamReceived** – event is received when a stream is ready for a participant in SDK side. stream can be binded after receiving this event for corresponding participant
+**streamReceived** – event is received when a stream is ready for a participant in sdk side. stream can be binded after receiving this event for coressponding participant.
 
 ```json
 {
 participant_id:"c0dcb75d-d056-4bd3-bdc5-e62e617863c7"
 state: true
 type: "video"
+stream: MediastreamTrack
+}
+```
+
+### **networkState** - event is recieved when network events occurs
+```json
+{
+        title : networkStreamLost
+        stream: video,
+        value: 54
 }
 ```
 
@@ -229,7 +206,8 @@ type: "video"
 
 ### People Waiting
 
-**peopleWaiting** – event is received when a person is on waiting room
+**peopleWaiting** – event is received when a person is on waiting room.
+
 
 ```json
 {
@@ -250,7 +228,7 @@ transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
 
 ### Remove From Waiting List
 
-**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected
+**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected.
 
 ```json
 {
@@ -270,7 +248,7 @@ pause: true
 ```
 ### Update Participant List
 
-**updateparticipantlist**– event is received when the participant list changes, ie video, audio is turned on/off. participant is speaking or not etc.
+**updateparticipantlist**– event is received when the participant list changes, ie video, audio is turned on/off. particpant is speaking or not etc.
 
 ```json
 {
@@ -280,50 +258,28 @@ type: "video"
 }
 ```
 
-### Host Mute or Unmute
 
-**hostMuteorUnmute** – event is received for the participant who is requested to mute/unmute mic from host
 
-```json
-{
-participant_id: "67d1260e-de97-4e7a-b296-6afbb16a80cd"
-state: true
-}
-```
+### Chat
 
-### Group Chat
-**groupChat** – event is received when a new groupChat chat message has been received
+**chat** - event is recieved when a new chat message has been recieved.
 
 ```json
 {
-chatType: "delivered"
-message: "hi"
-participant_id: "1fd390c9-d2c8-4863-8b4c-b1676f155b4e"
-participant_name: "qwerty"
-seen: false
-timestamp: 1655720436106
-title: "text"
-type: "text"
-}
-```
-
-### Private Chat
-
-**privateChat** – event is received when a new privateChat chat message has been received
-
-```json
-{
-chatType: "delivered"
-message: "what's up"
-oppo: "81667683-945d-4427-ab23-93e5c5fe491c"
-receiver: "900a02df-9295-40d2-ac63-22972a626304"
-seen: false
-sender: "81667683-945d-4427-ab23-93e5c5fe491c"
-timestamp: 1655720723894
-title: "text"
-type: "text"
-}
-```
+          status: "pending",
+          seen: true,
+          type: type,
+          title: "text",
+          isgroup: false,
+          participant_name: "Antony" ,
+          sender: "67d1260e-de97-4e7a-b296-6afbb16a80cd",
+          message: message,
+          timestamp: timestamp,
+          receiver: "5cgc60e-de97-4e7a-b296-6afbb16a80cd",
+          participant_id: "5cgc60e-de97-4e7a-b296-6afbb16a80cd"
+        };
+        
+   ```
 
 ### Host Camera On Off
 
@@ -335,16 +291,16 @@ participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
 state: true
 }
 ```
+### Host
 
-
-### Host Kick Out
-
-**hostKickOut** – event is received for the participant who is kicked out of the meeting by host
-
-```json
-{
-participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
-state: true	
+**host** - triggers when a host functionality occurs.
+```js
+ {
+          title: "hostMuteUnmute",
+          mute: true,
+          participant_id: "81667683-945d-4427-ab23-93e5c5fe491c",
+          publisher_id: "34veD3-945d-4427-ab23-93e5c5fe491c",
+          stream: "video"
 }
 ```
 
@@ -368,24 +324,23 @@ title: "device_modified"
 
 ### Left Participant
 
-**LeftParticipant** – event is received when a participant leaves the meeting
+**leftParticipant** – event is received when a participant leaves the meeting.
 ```json
 {
-      participant_id: “9f182432-fa3d-43df-8892-37677f5e3a94  ”
-      name: “Jinoy James”
+      participant_id: “9f182432-fa3d-43df-8892-37677f5e3a94”
+      
 }
 
 ```
+### Error Handler
 
-### Host End For All
+**errorhandler** - return errors occured in sdk.
 
-**hostEndForAll** – event is received when host ends the meeting for all
-
-```json
-{
-participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
-state: true
-}
+ ```JSON
+ {
+ title: "websocket_closed",
+ reason : ""
+};
 ```
 
 ## Meeting Methods
@@ -395,7 +350,7 @@ state: true
 ```json
 userLogin ( userName : string, password : string  ) :   Promise <UserDataModel | HttpError>
 ```
-Logs in using the given username and password
+Logs in using the given username and password.
 
 **Parameters**
 - **userName** : string 
@@ -410,6 +365,22 @@ userLogout ( ) :  Promise <any>
 Logs out and clear an active session.
 
 **Returns** `Promise <any>`
+
+### AddApiHeader
+
+```json
+AddApiHeader(config: {
+        token?: string | null,
+        optional?: { header: string, value: string }[]
+    }): void
+
+  ```  
+  **Parameters**
+  - token?: string | null
+
+  - optional?:  header: string, value: string 
+
+  **Returns** `void`
 
 ### Claim Login Session
 ```json
@@ -436,7 +407,7 @@ Resets the password by sending a resend link to the registered email address.
 ```json
 addEventListener ( handler : string, eventListener : ( data: ObserverEventType ) => void ) :  void
 ```
-You can add an event listener to capture the events coming from the SDK. This should be declared and used before any other functions
+You can add an event listener to capture the events coming from the SDK. This should be declared and used before any other functions.
 
 **Parameters**
 - handler : string, 
@@ -461,7 +432,7 @@ You can use this function to enter a meeting id and password. This should be use
 ```json
 scheduledMeetingCreate ( auto_record : boolean, dial_in : boolean, e2ee : boolean, expiry_date : number, join_mode : string, name : string, password : string, pin : number, record_mode : string, recurrence : boolean, recurrence_date : number, recurrence_repeat : number, recurrence_type : string, recurrence_weekdays : , start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
 ```
-Schedules a meeting with set parameters. You can pass the parameters to create a more customized meeting. This will only schedule the meeting for a later date and time. Scheduled meetings are valid for 24 hours from the meeting start date & time. Current e2e is an experimental feature.
+Schedules a meeting with set parameters.You can pass the parameters to create a more customized meeting.This will only schedule the meeting for a later date and time.Scheduled meetings are valid for 24 hours from the meeting start date & time. Currently e2e is an experimental feature.
 
 **Parameters**
 - auto_record : boolean, 
@@ -487,7 +458,7 @@ Schedules a meeting with set parameters. You can pass the parameters to create a
 ```json
 createInstantMeeting ( auto_record : boolean, dial_in : boolean, e2ee : boolean, join_mode : , name : string, password : string, pin : number, recurrence : boolean, start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
 ```
-Creates a meeting with editable parameters. If parameters are not edited, creates a meeting with default settings. The difference here when comparing with scheduledMeetingCreate is that createInstantMeeting will create a meeting and join to it. This is very useful to create and join a meeting instantly.
+Creates a meeting with editable parameters.If parameters are not edited, creates a meeting with default settings. The difference here when comparing with scheduledMeetingCreate is that createInstantMeeting will create a meeting and join to it. This is very useful to create and join a meeting instantly.
 
 **Parameters**
 - auto_record : boolean, 
@@ -506,14 +477,24 @@ Creates a meeting with editable parameters. If parameters are not edited, create
 ### Start Meeting Session
 ```json
 startMeetingSession ( audio : boolean, video : boolean, displayName : string  ) :  Promise<void>
-Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth)
 ```
+
+Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth).
+
 **Parameters**
  - audio : boolean, 
  - video : boolean, 
  - displayName : string 
 
 **Returns**  `Promise<void>`
+
+### Switch Camera
+```js
+ switchCamera(): void
+ ````
+Switch camera of mobile devices 
+
+**Returns**  `void`
 
 
 ### Meeting List
@@ -558,7 +539,7 @@ Mutes/unmutes the audio and starts/stops the video of the participant. This is t
 ```json
 contentShareAction ( audio : boolean, video : boolean  ) :  void
 ```
-You can start a screen share using this function. You can pass audio and video as true to start the screenshare. To stop an on going screenshare you can pass false to audio and video. You cannot start contentShare with passing only audio as true and video as false but you can pass video as true and audio as false.
+You can start a screen share using this function.You can pass audio and video as true to start the screenshare. To stop an on going screenshare you can pass false to audio and video.You cannot start contentShare with passing only audio as true and video as false but you can pass video as true and audio as false.
 
 
 **Parameters**
@@ -582,7 +563,8 @@ Raises/lowers hand to notify other participants.
 ```json
 sendMessage ( message : , type : string, title : string, participant_id ? : string  ) :  Promise<void>
 ```
-Sends texts/files to other participants. This can be used to implement in-meeting chat functionalities. The messages and files transferred will be valid till the end of that meeting session.
+Sends texts/files to other participants.This can be used to implement in-meeting chat functionalities.
+The messages and files transferred will be valid till the end of that meeting session.
 
 
 **Parameters**
@@ -643,7 +625,8 @@ Unbinds streams from an element. Use this only after elements has been created.
 ```json
 pauseSubscriberVideo ( participantsId : string[array]  pause : boolean  ) :  void
 ```
-You can pause the video of a remote participant in a meeting. This will only affect your view the actual video will not be paused. This pause is only applicable to the person who is calling this function. It will not affect other participants or the person who is sending his video. This is useful to pause the video of a participant who is not in your current view or when the user’s bandwidth is unstable.
+You can pause the video of a remote participant in a meeting.This will only affect your view the actual video will not be paused.This pause is only applicable to the person who is calling this function.It will not affect other participants or the person who is sending his video. This is useful to pause the video of a participant who is not in your current view or when the user’s bandwidth is unstable.
+Note: Don’t pass the participant_id of the current user. (publisher)
 
 **Parameters**
  - participantsId : string[array]  
@@ -680,7 +663,7 @@ Allows hosts to give participants the permission to enter a locked meeting.
 ```json
 hostLockMeetingAction ( hostlock : boolean  ) :  void
 ```
-Allows hosts to lock the meeting so that participants cannot enter the meeting without host’s permission. This is useful to lock the meeting while the meeting is in progress.
+Allows hosts to lock/unlock the meeting so that participants cannot enter the meeting without host’s permission. This is useful to lock the meeting while the meeting is in progress.
 
 **Parameters**
  - hostlock : boolean 
@@ -691,7 +674,7 @@ Allows hosts to lock the meeting so that participants cannot enter the meeting w
 ```json
 hostManageRaiseHand ( participant_id : string  ) :  void
 ```
-Gives host ability to lower a participant’s raised hand
+Gives host ability to lower a participant’s raised hand.
 
 **Parameters**
  - participant_id : string 
@@ -715,7 +698,7 @@ Gives hosts the ability to mute on/off a participant’s audio and video.
 ```json
 hostManageAllParticipantsAudio ( hostMute : boolean  ) :  void
 ```
-Gives hosts the ability to turn on/off all participant’s audio at once. Require participant’s permission to turn on
+GGives hosts the ability to turn on/off all participant’s audio at once. Require participant’s permission to turn on.
 
 **Parameters**
  - hostMute : boolean 
@@ -726,7 +709,7 @@ Gives hosts the ability to turn on/off all participant’s audio at once. Requir
 ```json
 hostEndMeeting ( ) :  void
 ```
-Gives hosts the ability to end the meeting for all participants
+Gives hosts the ability to end the meeting for all participants.
 
 **Returns**    `void`
 
@@ -734,7 +717,7 @@ Gives hosts the ability to end the meeting for all participants
 ```json
 hostRemoveParticipant ( participant_id : string  ) :  void
 ```
-Gives hosts the ability to remove/kick participants out from the meeting. This participant can join back again if they wish to.
+Gives hosts the ability to remove/kick participants out from the meeting.This participant can join back again if they wish to. 
 
 **Parameters**
  - participant_id : string 
