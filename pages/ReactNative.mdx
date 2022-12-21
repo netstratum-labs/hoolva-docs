@@ -120,78 +120,178 @@ Measuring the usage of video and content sharing in HDMeet SDK meetings
 
 ### Room State
 
- **roomstate** : roomstate of current meeting will be passed through event listener. possible room states are open, locked and closed. event is fired after calling startMeetingSession.
+ **roomstate** - When a participant tries to join a meeting they won’t redirect to the session immediately. The meeting might be closed or requires permission from the host to join the meeting.
+The person trying to join the meeting should be aware of the meeting room state so they navigate to the appropriate page ( waiting room ). roomstate event fires when they try to join a meeting after calling startMeetingSession and returning the current meeting room state data.
 
-```json
 
-state : "open"/ "close"/ "lock"
+```js
+ state : meetingsession.addEventListener("roomState", function (state) {
+            // Do the actions you want to do on this event
+        if(state==="open"){
+           // user can directly navigate to the meeting.
+         }
+        if(state==="close"){
+          // The meeting is locked. participant should wait for the host to allow them to the meeting
+         }
+        if(state==="deny"){
+          // host has denied your entry.        
+         }
+    })
 
 ```
+meetingsession is the object of the class MeetingSession which is imported from hdmeet. For more information [Getting Started](Electron#getting-started)
+
+Possible returned data are _open_, _close_ and _deny_ 
+
+1. **open** - room is open and any participants can join before host approves.    
+
+2. **close** - room is closed and any guest participants will be in waiting room and automatically join when host joins the meeting or allows the participant.
+
+3. **deny**- Host has denied your access to the meeting. deny event can only be received after a close event.
 
 ### Join Meeting
 
-**joinMeeting** : this event is received when all the necessary things are done on SDK to join into a meeting.
+**joinMeeting** – After calling _startMeetingSession_ SDK will create the necessary connections to start a meeting. This event is fired when these connections have been successfully created and the participant is ready to join the meeting. 
 
-```json
+```js
+meetingsession.addEventListener("joinMeeting", (state) => {
+       // the participant is ready to join on meeting
+    })
 
-state : true
 ```
+We should also consider the room state before navigating to the meeting.
+
 ### Participant List
 
-**participantList** – event is received when a participant joins into a meeting.
+**participantList** – When a new participant joins, the participant details are shared with other participants via _participantList_ event. The data of local participant is also shared through this event.
 
 ```json
+meetingsession.addEventListener("participantList", (data) => {
+        // details of the participant
+    })
 
+```
+Returned data is an object consisting of participant details.
+
+Types of returned data as follows :
+
+```js
 {
-audio: false
-audioPeer: null
-audioSdp: null
-audioSender: null
-audioStream: null
-audio_room: false
-host: false
-isPublisher: false
-meetingConfig: MeetingConfiguration 
-mixedAudio: null
-name: "qwerty"
-participant_id:"3056378e-ce4c-4bc3-b581-1bb512afae2d"
-pause: undefined
-raiseHand: false
-screenshare: false
-screensharePeer: null
-screenshareSdp: null
-screenshareSender: null
-screenshareStream: null
-speaking: false
-video: true
-videoPeer: null
-videoSdp: null
-videoSender: null
-videoStream: null
+    name: string
+    participant_id: string
+    audio: boolean
+    video: boolean
+    videoStream: MediaStream | null
+    screenshareStream: MediaStream | null
+    mixedAudio: MediaStream | null
+    isPublisher: boolean
+    host: boolean;
+    speaking: boolean;
+    raiseHand: boolean;
+    screenshare: boolean;
 }
 ```
+- **name** :- name of the participant
+- **participant_id**:- a unique identifier for a particular participant
+- **audio**:- indicates current audio status of the participant
+- **Video** :- indicates current video status of the participant
+- **isPublisher**:- indicates if the participant is local or remote. true for local participant and false for remote participant
+- **host** :- indicates if the participant is host for the meeting
+- **Speaking**:- indicates if participant is talking right now
+- **raiseHand** :- indicates if the participant is raise handing or not
+- **Screenshare** :- indicates if the screenshare status of the participant
+- **videoStream**:- contains a video stream of the participant. 
+- **mixedAudio** :- contains audio track of the meeting
+- **screenshareStream** : contains a screen share stream of the participant
+
+When videoStream,  mixedAudio and screenshareStream are updated, it is passed through streamReceived event .This is only available for react native since binding streams requires streams instead of participant_id [(Stream Bind)](Electron#stream-bind), other updates are updated via updateparticipantlist.
+
+### Stream Modified
+
+Event is fired after calling _remoteParticipantVideoQuality_ and _pauseSubscriberVideo_ functions. It returns current remote participant video quality or pause status of participants.
+
+```js
+ meetingsession.addEventListener("streammodified", (data) => {
+    //contains pause status or video quality of participants when it changes
+    })
+```
+
+  Remote participant video quality event contains data type as follows :
+
+  ```js
+  {
+     title: "videoQuality",
+     participants: Array<string>,
+     bitrate: 0 | 1 | 2,
+     framerate: 0 | 1 | 2
+}
+```
+
+- **title**:- will be videoQuality for remote participant video quality event.
+- **Participants**:- An array of participant_id who’s video quality has been updated. This updation of video quality will only affect for local participant.
+- **Bitrate**:- value ranges from 0 to 2. 2 is high and 0 is low.
+- **framerate**:- value ranges from 0 to 2. 2 is high and 0 is low.
+
+Pause status of participants event contains data type as follows :
+
+```js
+{
+     title: "pause",
+     participants: Array<string>,
+     Pause: boolean
+}
+```
+
+- **title**:- will be pause for the pause event.
+- **Participants**:- An array of participant_id who’s pause status has been updated. This updation of pause status will only affect for local participant.
+- **Pause**:- indicates pause status of the returned participant. Values will be _true_ or _false_. 
+              <br/>_true_ indicates that participants are being paused. 
+              <br/>_false_ indicates participants	Video is resumed. 
+              <br/>_Pause_ is only available for video for now.
+
+
 
 ### Stream Received
 
-**streamReceived** – event is received when a stream is ready for a participant in sdk side. stream can be binded after receiving this event for coressponding participant.
+**streamReceived** – When a stream is received and ready for binding, _streamReceived_ is received through the event listener. When this event is received _stream_ can be used in _StreamView_ to view the stream.
 
-```json
+```js
+ meetingsession.addEventListener("streamReceived", (data) => {
+      // contains which type of stream is received and the corresponding participant_id
+    })
+```
+
+The returned data type contains _partcipant_id_ of the participant with stream. _type_ indicates which stream is received. possible data are :
+
+```js
 {
-participant_id:"c0dcb75d-d056-4bd3-bdc5-e62e617863c7"
-state: true
-type: "video"
-stream: MediastreamTrack
+  state: boolean,
+  participant_id: string,
+  type: ”audio”| “video” | “screenshare”,
+  stream: MediaStream
 }
 ```
 
-### **networkState** - event is recieved when network events occurs
-```json
-{
-        title : networkStreamLost
-        stream: video,
-        value: 54
-}
+### Network State
+
+**networkState** - Event is received when a network instability occurs in a meeting. 
+
+```js
+meetingsession.addEventListener("networkState", (data) => {
+     // returns data with title and reason
+})
 ```
+Returned data consist of title and reason/state 
+
+Title may contain :
+
+- **Connection_failed** :-  When the necessary connections got teared down . This can occur due to a network issue. SDK will automatically reconnect back to the meeting.
+- **network_rejoin**:- event fires when SDK is attempting to rejoin. network_rejoin has two types of reasons. attempting to rejoin indicates the reconnection is in progress and rejoined successfully indicates that reconnection has been successfully completed.
+- **Latency**:- indicates how much latency of the network. Possible states are low, medium and high.
+- **pakcet_drop**:- indicates how much packet drop experienced by the participant. Possible state are low, medium and high.
+- **badNetwork**:- indicates low reception of network.
+- **no_network**:- network is not available. 
+- **Back_online**:- network is available after a no_network event.
 
 ### Network Stream Lost
 
@@ -206,35 +306,61 @@ stream: MediastreamTrack
 
 ### People Waiting
 
-**peopleWaiting** – event is received when a person is on waiting room.
+**peopleWaiting** – When a meeting is in a _close_ state, participants cannot join the meeting without the permission of the host. At this time participants will be in the waiting room. _peopleWaiting_ informs participants in the waiting room. This event is only received for the host.  
 
 
-```json
+```js
+  meetingsession.addEventListener("peopleWaiting", (data) => {
+      // fires when participant is on waiting room
+    })
+```
+
+_peopleWaiting_ contains data as follows :
+
+```js
 {
-name: "qwerty"
-state: true
-transaction_id:"e86c7878-4a55-44ec-d030-6074983adbd6"
+    state: boolean
+    name: string
+    transaction_id: Array<string>
 }
 ```
+
+_transaction_id_ contains a unique identifier for the waiting list which will be different at each time. This transaction_id can be passed to _hostAllowParticipants_ to allow that particular participant. The host can allow this participant.
+
+
 ### Remove From Waiting List
 
-**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected
+**removeFromWaitingList** – When the host allows or rejects participants, the _removeFromWaitingList_ event is fired with the transaction_id of participants. This event is also received when other host allow or reject participants.
 
-```json
-{
-transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
-}
+```js
+ meetingsession.addEventListener("removeFromWaitingList", (data) => {
+      // contains an object with field transactions which conatins array of transaction_id
+    })
+```
+The participants returned from this listener need to be removed from the waiting room list since they are no longer in the waiting room. A unique identifier returned from the transactions is the key to identify the participants in the waiting room.
+
+### Meeting State
+
+A meeting can be opened or closed. Anyone can join an open meeting. But to join a closed meeting, one should wait for the host or need to be accepted by the host. The state of the room will be received through a _meetingstate_ listener. Event is fired while joining a meeting or the meeting state is changed while on meeting by the hosts. 
+
+```js
+meetingsession.addEventListener("meetingstate", (data) => {
+      // contains lock room status
+    })
 ```
 
-### Remove From Waiting List
+Returned data is on this format.
 
-**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected.
-
-```json
+```js
 {
-transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
+    type: ”lock_room”,
+    state: boolean
 }
 ```
+State indicates whether the meeting is closed or open. 
+<br/>_true_ indicates that room is _closed_ and 
+<br/>_false_ indicates that room is _open_. 
+<br/><br/>Participants should not wait for this event to navigate to the waiting room. _roomstate_ is used for that purpose. _meetingstate_ is used to show the current status of a meeting and it can be used to show the current meeting status inside the meeting. One can change the meeting state using _hostLockMeetingAction_. 
 
 ### Pause Video
 
@@ -258,90 +384,235 @@ type: "video"
 }
 ```
 
-
-
 ### Chat
 
-**chat** - event is recieved when a new chat message has been recieved.
+**chat** -  When another participant sends a message it receives through the _chat_ listener. Both private and public (Group) messages are received through this event. 
 
-```json
+```js
+meetingsession.addEventListener("chat", (data) => {
+      // errors occurred by the issues from user side//data.isgroup
+       if(data.isgroup) {
+            // group messages     
+        }
+       else {
+           //private messages    
+        }
+    })
+ ```       
+Returned data contains :-
+
+```js
 {
-          status: "pending",
-          seen: true,
-          type: type,
-          title: "text",
-          isgroup: false,
-          participant_name: "Antony" ,
-          sender: "67d1260e-de97-4e7a-b296-6afbb16a80cd",
-          message: message,
-          timestamp: timestamp,
-          receiver: "5cgc60e-de97-4e7a-b296-6afbb16a80cd",
-          participant_id: "5cgc60e-de97-4e7a-b296-6afbb16a80cd"
-        };
-        
-   ```
-
-### Host Camera On Off
-
-**hostCameraOnOff** – event is received for the participant who is requested to mute/unmute camera from host
-
-```json
-{
-participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
-state: true
+    status: “delivered” | ”pending”
+    seen: boolean
+    isgroup: boolean
+    type: “text”|”file”
+    participant_id: string
+    message: string
+    title: “text”
+    sender: string
+    timestamp: number;
+    participant_name: string;
 }
 ```
+- **seen**:- it indicates whether a local participant has read this message. Right now, there is no way to know when a remote participant has read the message
+
+- **isgroup**:- indicates if the message is a group or private. For the group message, it will be true.
+
+- **type**:- it indicates if a message is a file or text. If it is a file, the message will be a link to that file.
+
+- **sender**:- contains the participant_id of the sender
+
+- **participant_id**:- contains the participant_id of the receiver. If it is a group, the whole participant will receive the message. So the data will be _"all_participant"_ in this event
+
+- **message**:- message contains the chat / file send by the participants
+
+- **title**:- will always be _“text”_ (will be removed on refactoring)
+
+- **timestamp**:- contains the timestamp when the message is sent
+
+- **participant_name**:- contains the name of the participant who sent the message
+
+- **status**:- will be _“delivered”_ or _“pending”_. _“pending”_ indicates that a message has been sent to a remote participant and it’s not reached yet there. _“delivered”_ indicates that a message is delivered to the local participant and it’s not seen yet. Only the messages sent by local participants contain the status as _“pending”_. When it’s been delivered, we just need to update the status. The returned data to update local participant message is as follows :
+
+```js
+{
+    status: “delivered” 
+    isgroup: boolean;
+    participant_id: string;
+    timestamp: number;
+}
+```
+
 ### Host
 
-**host** - triggers when a host functionality occurs.
+**host** - There are some features the host can perform in the meeting :
+
+- mute/unmute audio or video of other participants. 
+- Kicks out a participants from a meeting
+- Ends the meeting for all participants
+- Raise down the raise-hand participants
+
+_host_ event fires when the host performs any of these actions. 
+
 ```js
- {
-          title: "hostMuteUnmute",
-          mute: true,
-          participant_id: "81667683-945d-4427-ab23-93e5c5fe491c",
-          publisher_id: "34veD3-945d-4427-ab23-93e5c5fe491c",
-          stream: "video"
+   meetingsession.addEventListener("host", (data) => {
+      if(data.title === "hostEndForAll") {
+            // received when host ends the meeting for all
+        }
+       else if(data.title === "hostKickOut") {
+            // received when host kicks you out
+        }
+       else if(data.title === "hostMuteUnmute") {
+              if(data.stream === "audio") {
+            // received when host mutes your mic
+              }
+              else if(data.title === "video") {
+            // received when host mutes your camera
+              }
+        }
+       else if(data.title === "down_hand_by_host") {
+            // received when host downs your raise hand 
+        }
+    })
+
+```
+
+One can perform actions based on the host's request using this listener. Returned data is as follows :
+
+- **hostEndForAll**:-
+```js
+{
+  title: "hostEndForAll"
+  state: boolean
 }
 ```
+When an event is received SDK forcefully ends the meeting. Since user is no longer in the meeting they needs to be navigated out of the meeting page.
+
+- **hostMuteUnmute**:-
+```js
+{
+  title: "hostMuteUnmute",
+  mute:boolean,
+  participant_id: string,
+  publisher_id: string,
+  stream: "audio" | “video”
+}
+```
+
+When the host mutes/unmutes your video/audio _hostMuteUnmute_  event is received. When the host mutes your audio or video SDK forcefully mutes the participant. While the host requests to unmute, SDK won’t update the mute status. Instead, it only passes down the event so the participant can decide whether he/she should turn on the video/audio.
+
+- **hostKickOut**:-
+```js
+{
+  title: "hostKickOut",
+  state:boolean,
+  participant_id: string,
+}
+``` 
+
+Event is received when the host kicks you out of the meeting. The participant is no longer in the meeting and can be navigated outside the meeting. _Participant_id_ indicates the participant_id of the host who kicked you out.
+
+- **Down_hand_by_host**:-
+
+When the host removes your raise hand you will receive the event. SDK removes the raise hand forcefully and local participant should remove it front their list.
+```js
+{
+  title: "down_hand_by_host",
+  state:boolean,
+  participant_id: string,
+}
+```
+
+_Participant_id_ indicates the participant_id of the host who down handed you out. 
 
 ### Device List Modified
 
-**deviceListModified** – event is received when device list or current device changes
+**deviceListModified** – event is fired on certain circumstances.
+
+- When there’s a change on device is detected ( when a device is connected or removed)
+- After calling _listAvailableDevices_ to fetch device list
+- After switching audio/video devices with _switchDevices_. 
 
 
-```json
-currentDevice: {audioInput: 'default', audioOutput: 'default', videoInput: '59ad539e11bcf5415ffe028e51c2aaeb666323ab4a12e0d94e0debbc234090c5'}
-reason: "initial_state"
-title: "currentdevice"
-
-or 
-
-
-reason: "A device was added/removed"
-title: "device_modified"
+```js
+meetingsession.addEventListener("deviceListModified", (data) => {
+        if(data.title === "device_modified") {
+            // call listAvailableDevices to fetch the device which updates device list
+        }
+        if(data.title === "currentdevice") {
+           // current device in use has been updated. update the device list accordingly
+        }
+    })
 
 ```
+_deviceListModified_ returns data with title _device_modified_ when a new audio/video device is added or removed. So the device list on the client side needs to be updated accordingly. _Currentdevice_ returns currently used audio/video device. The event is fired when calling _listAvailableDevices_ for initial device state and _switchDevices_ to inform currently used devices.
+
+_currentdevice_ returns audio video I/O device id which will be of string type. _currentdevice_ with reason _initial_state_ returns currently used I/O devices while reason with _update_state_ only returns device id, which has been changed. Other I/O which remains same will contain value of _unchanged_ in _update_state_.
+
+Sample returned data of _deviceListModified_ with title _currentdevice_ and reason _initial_state_ as follows:-
+
+```js
+
+{
+  title: "currentdevice",
+  reason: "initial_state",
+  currentDevice: {
+          audioInput: "0ef1ef67f4a04bb910fe6527892d7339a23a8bdfaf650956f56306546f1ca69b"
+          audioOutput: "136caf6a27fcdc960cfe70b55a765993bb72298070ddfdd356c19ec851ce50d2"
+          videoInput: "d5996c4305fdd7e80f5011215f235bb436e1014f6dcd66990ee33445cab5b3ac"
+                 }
+}
+```
+Sample returned data of _deviceListModified_ with title _currentdevice_ and reason _update_state_ as follows:-
+
+```js
+
+{
+  title: "currentdevice",
+  reason: "update_state",
+  currentDevice: {
+          audioInput: "0ef1ef67f4a04bb910fe6527892d7339a23a8bdfaf650956f56306546f1ca69b"
+          audioOutput: "unchanged"
+          videoInput: "unchanged"
+                 }
+}
+```
+
+_deviceListModified_ should be added before calling _listAvailableDevices_ and _switchDevices_ to avoid missing the event. But it is advised to add this listener right after creating [MeetingSession.](/ReactNative#start-meeting-session)
 
 ### Left Participant
 
-**leftParticipant** – event is received when a participant leaves the meeting.
-```json
+**leavedParticipant** – When a participant leaves the meeting _leftparticipant_ event is fired to acknowledge other participants. Event is fired when a participant leaves a meeting, _leftparticipant_ occurs for both self participant and remote participant. _leftparticipant_  occurs on numerous occasion :
+
+- When a remote participant leaves the meeting
+- When self participant ends the meeting
+- When the host kicks out the self participant
+- When the host ends the meeting
+- On websocket close event (need to describe it other section)
+
+
+```js
 {
-      participant_id: “9f182432-fa3d-43df-8892-37677f5e3a94”
+       meetingsession.addEventListener("leftparticipant", (data) => {
+      // if it’s a remote participant remove the participant from the  list
+    })
       
 }
 
 ```
+leftparticipant returns data with _participant_id_ and name of the participant who left the meeting. Returned data will be the same for both local and remote participants.
+
 ### Error Handler
 
-**errorhandler** - return errors occured in sdk.
+**errorhandler** - Meetings can be interrupted or may not work due to some reasons. SDK passes information about this issue so clients can behave accordingly. It is important to acknowledge users about this issue which can be resolved on their part.
 
- ```JSON
- {
- title: "websocket_closed",
- reason : ""
-};
+```js
+meetingsession.addEventListener("errorhandler", (data) => {
+      // errors occurred by the issues from user side
+    })
 ```
+_data_ with _title websocket_closed_ indicates that the meeting can no longer be continued from the user side since the connections are already closed for various reasons. _data_ with the title _device_error_ indicates an error occurred while creating a stream using mediadevices.
 
 ## Meeting Methods
 
