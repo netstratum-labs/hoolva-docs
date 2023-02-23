@@ -1,7 +1,16 @@
 ## Getting Started
-<br/>
 
-<iframe width="750" height="422" src="https://www.youtube.com/embed/zkm5GKzYcmM" title="Hoolva SDK - Building a simple video conference application from scratch" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<br />
+
+<iframe
+  width="750"
+  height="422"
+  src="https://www.youtube.com/embed/zkm5GKzYcmM"
+  title="Hoolva SDK - Building a simple video conference application from scratch"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
 
 Install the SDK in your project
 
@@ -16,52 +25,48 @@ import { MeetingSession } from "hdmeet";
 ```
 
 After installing the package hdmeet you have to create an object of a class MeetingSession to use the available methods in SDK.
+
 ```json
 const meetingsession = new MeetingSession(
-apiKey, 
+apiKey,
 logLevel,
 environmentLevel
 );
 ```
 
-apikey -  It is a unique identifier to authorize your client with Hoolva server. You will get the api key from developer portal.
+apikey - It is a unique identifier to authorize your client with Hoolva server. You will get the api key from developer portal.
 logLevel - Specifies log level to be shown from the SDK. Available values are -
 
-
-
-| values        |Description| 
-| :---          |    :----:       | 
-| 1             | Shows all logs including warnings, errors, info and logs |                                                                                                                    
-| 2             | Shows logs including warnings, errors and info           |                     
-| 3             | Shows logs including warnings and errors                 |                      
-| 4             | Shows error logs only                                    |
-| 5             | No logs from SDK, logs will be turned off                |
+| values |                       Description                        |
+| :----- | :------------------------------------------------------: |
+| 1      | Shows all logs including warnings, errors, info and logs |
+| 2      |      Shows logs including warnings, errors and info      |
+| 3      |         Shows logs including warnings and errors         |
+| 4      |                  Shows error logs only                   |
+| 5      |        No logs from SDK, logs will be turned off         |
 
 _environmentLevel_ - specifies which servers should hdmeet connects to. Available environmentLevels are sandbox and production
 
-After creating and object of “MeetingSession” it can be used to call the methods available in SDK. Some functions triggers Eventlisteners which are provided by the SDK. 
+After creating and object of “MeetingSession” it can be used to call the methods available in SDK. Some functions triggers Eventlisteners which are provided by the SDK.
 
 In order to get these events it needs to be added before calling any SDK methods.
 Eventlistners are used to capture asynchronous events occurred in SDK. Eventlistners consist of a key and a callback.
 
-```json 
-Meetingsession.addEventListener( key , callback)
+```json
+Meetingsession.addEventListener(key, callback)
 ```
 
-Available Eventlisteners are documented under [Meeting events](/Electron#meeting-events)
+Available Eventlisteners are documented under [Meeting events](Electron#meeting-events)
 
 Note - To avoid unexpected behavior of the SDK it is recommended to call the eventlistener before the calling the SDK methods.
 
 Sample use case
 
 To authenticate a meeting we can use preAuth inside the Meetingsession
- Meetingsession.preAuth( username , password)
-All available functions are documented in [Meeting methods](/Electron#meeting-methods)
-
-
+Meetingsession.preAuth( username , password)
+All available functions are documented in [Meeting methods](Electron#meeting-methods)
 
 ## Meeting Events
-
 
 The HDMeet SDK sends meeting lifecycle events, which you can use to trigger notifications and initiate downstream workflows. Some examples of using meeting events include:
 
@@ -71,79 +76,184 @@ Measuring the usage of video and content sharing in HDMeet SDK meetings
 
 ### Room State
 
- **roomstate** : roomstate of current meeting will be passed through event listener. possible room states are open, locked and closed. event is fired after calling startMeetingSession.
+**roomstate** - When a participant tries to join a meeting they won’t redirect to the session immediately. The meeting might be closed or requires permission from the host to join the meeting.
+The person trying to join the meeting should be aware of the meeting room state so they navigate to the appropriate page ( \__waiting room_ ). _roomstate_ event fires when they try to join a meeting after calling startMeetingSession and returning the current meeting room state data.
 
-```json
- state : "open"/ "close"/ "lock"
-
+```js
+state: meetingsession.addEventListener('roomState', function (state) {
+  // Do the actions you want to do on this event
+  if (state === 'open') {
+    // user can directly navigate to the meeting.
+  }
+  if (state === 'close') {
+    // The meeting is locked. participant should wait for the host to allow them to the meeting
+  }
+  if (state === 'deny') {
+    // host has denied your entry.
+  }
+})
 ```
+
+meetingsession is the object of the class MeetingSession which is imported from hdmeet. For more information [Getting Started](Electron#getting-started)
+
+Possible returned data are _open_, _close_ and _deny_
+
+1. **open** - room is open and any participants can join before host approves.
+
+2. **close** - room is closed and any guest participants will be in waiting room and automatically join when host joins the meeting or allows the participant.
+
+3. **deny**- Host has denied your access to the meeting. deny event can only be received after a close event.
 
 ### Join Meeting
 
-**joinMeeting** – event is received when the all the necessary things are done on sdk to join into a meeting.
+**joinMeeting** – After calling _startMeetingSession_ SDK will create the necessary connections to start a meeting. This event is fired when these connections have been successfully created and the participant is ready to join the meeting.
 
-```json
-state : "true"
-
+```js
+meetingsession.addEventListener('joinMeeting', (state) => {
+  // the participant is ready to join on meeting
+})
 ```
+
+We should also consider the room state before navigating to the meeting.
+
 ### Participant List
 
-**participantList** – event is received when a participant joins into a meeting.
+**participantList** – When a new participant joins, the participant details are shared with other participants via _participantList_ event. The data of local participant is also shared through this event.
 
 ```json
+meetingsession.addEventListener("participantList", (data) => {
+  // details of the participant
+})
+```
 
+Returned data is an object consisting of participant details.
+
+Types of returned data as follows :
+
+```js
 {
-audio: false
-audioPeer: null
-audioSdp: null
-audioSender: null
-audioStream: null
-audio_room: false
-host: false
-isPublisher: false
-meetingConfig: MeetingConfiguration 
-mixedAudio: null
-name: "qwerty"
-pantpant_id:"3056378e-ce4c-4bc3-b581-1bb512afae2d"
-pause: undefined
-raiseHand: false
-screenshare: false
-screensharePeer: null
-screenshareSdp: null
-screenshareSender: null
-screenshareStream: null
-speaking: false
-video: true
-videoPeer: null
-videoSdp: null
-videoSender: null
-videoStream: null
+  name: string
+  participant_id: string
+  audio: boolean
+  video: boolean
+  videoStream: MediaStream | null
+  screenshareStream: MediaStream | null
+  mixedAudio: MediaStream | null
+  isPublisher: boolean
+  host: boolean
+  speaking: boolean
+  raiseHand: boolean
+  screenshare: boolean
 }
 ```
+
+- **name** :- name of the participant
+- **participant_id**:- a unique identifier for a particular participant
+- **audio**:- indicates current audio status of the participant
+- **Video** :- indicates current video status of the participant
+- **isPublisher**:- indicates if the participant is local or remote. true for local participant and false for remote participant
+- **host** :- indicates if the participant is host for the meeting
+- **Speaking**:- indicates if participant is talking right now
+- **raiseHand** :- indicates if the participant is raise handing or not
+- **Screenshare** :- indicates if the screenshare status of the participant
+- **videoStream**:- contains a video stream of the participant.
+- **mixedAudio** :- contains audio track of the meeting
+- **screenshareStream** : contains a screen share stream of the participant
+
+When videoStream, mixedAudio and screenshareStream are updated, it is passed through streamReceived event .This is only available for react native since binding streams requires streams instead of participant*id [(Stream Bind)](Electron#stream-bind), other updates are updated via \_updateparticipantlist*
+.
+
+### Stream Modified
+
+Event is fired after calling _remoteParticipantVideoQuality_ and _pauseSubscriberVideo_ functions. It returns current remote participant video quality or pause status of participants.
+
+```js
+meetingsession.addEventListener('streammodified', (data) => {
+  //contains pause status or video quality of participants when it changes
+})
+```
+
+Remote participant video quality event contains data type as follows :
+
+```js
+{
+   title: "videoQuality",
+   participants: Array<string>,
+   bitrate: 0 | 1 | 2,
+   framerate: 0 | 1 | 2
+}
+```
+
+- **title**:- will be videoQuality for remote participant video quality event.
+- **Participants**:- An array of participant_id who’s video quality has been updated. This updation of video quality will only affect for local participant.
+- **Bitrate**:- value ranges from 0 to 2. 2 is high and 0 is low.
+- **framerate**:- value ranges from 0 to 2. 2 is high and 0 is low.
+
+Pause status of participants event contains data type as follows :
+
+```js
+{
+     title: "pause",
+     participants: Array<string>,
+     Pause: boolean
+}
+```
+
+- **title**:- will be pause for the pause event.
+- **Participants**:- An array of participant_id who’s pause status has been updated. This updation of pause status will only affect for local participant.
+- **Pause**:- indicates pause status of the returned participant. Values will be _true_ or _false_.
+  <br />
+  _true_ indicates that participants are being paused.
+  <br />
+  _false_ indicates participants Video is resumed.
+  <br />
+  _Pause_ is only available for video for now.
 
 ### Stream Received
 
-**streamReceived** – event is received when a stream is ready for a participant in sdk side. stream can be binded after receiving this event for coressponding participant.
+**streamReceived** – When a stream is received and ready for binding, _streamReceived_ is received through the event listener. When this event is received, it can be passed to SDK using _streamBind_ function to bind this stream.
 
 ```js
 {
-participant_id:"c0dcb75d-d056-4bd3-bdc5-e62e617863c7"
-state: true
-type: "video"
+  meetingsession.addEventListener('streamReceived', (data) => {
+    // contains which type of stream is received and the corresponding participant_id
+  })
 }
 ```
+
+The returned data type contains _partcipant_id_ of the participant with stream. _type_ indicates which stream is received. Possible data are :
+
+```js
+{
+  state: boolean,
+  participant_id: string,
+  type: ”audio”| “video” | “screenshare”
+}
+```
+
+Before binding it is required to create a video element in the UI before calling _streamBind_.
 
 ### Network State
 
-**networkState** - event is recieved when network events occurs.
+**networkState** - Event is received when a network instability occurs in a meeting.
 
 ```js
-{
-        title : networkStreamLost
-        stream: video,
-        value: 54
-}
+meetingsession.addEventListener('networkState', (data) => {
+  // returns data with title and reason
+})
 ```
+
+Returned data consist of title and reason/state
+
+Title may contain :
+
+- **Connection_failed** :- When the necessary connections got teared down . This can occur due to a network issue. SDK will automatically reconnect back to the meeting.
+- **network_rejoin**:- event fires when SDK is attempting to rejoin. network_rejoin has two types of reasons. attempting to rejoin indicates the reconnection is in progress and rejoined successfully indicates that reconnection has been successfully completed.
+- **Latency**:- indicates how much latency of the network. Possible states are low, medium and high.
+- **pakcet_drop**:- indicates how much packet drop experienced by the participant. Possible state are low, medium and high.
+- **badNetwork**:- indicates low reception of network.
+- **no_network**:- network is not available.
+- **Back_online**:- network is available after a no_network event.
 
 ### Network Stream Lost
 
@@ -151,31 +261,77 @@ type: "video"
 
 ```json
 {
-        stream: video,
-        value: 54
+  "stream": video,
+  "value": 54
 }
 ```
 
 ### People Waiting
 
-**peopleWaiting** – event is received when a person is on waiting room.
+**peopleWaiting** – When a meeting is in a _close_ state, participants cannot join the meeting without the permission of the host. At this time participants will be in the waiting room. _peopleWaiting_ informs participants in the waiting room. This event is only received for the host.
 
-```json
+```js
+meetingsession.addEventListener('peopleWaiting', (data) => {
+  // fires when participant is on waiting room
+})
+```
+
+_peopleWaiting_ contains data as follows :
+
+```js
 {
-name: "qwerty"
-state: true
-transaction_id:"e86c7878-4a55-44ec-d030-6074983adbd6"
+    state: boolean
+    name: string
+    transaction_id: Array<string>
 }
 ```
+
+_transaction_id_ contains a unique identifier for the waiting list which will be different at each time. This transaction*id can be passed to \_hostAllowParticipants* to allow that particular participant. The host can allow this participant.
+
 ### Remove From Waiting List
 
-**removeFromWaitingList** – event is received when host accepts / rejects a participant in waiting room . event is only received for the participant who got accepted / rejected.
+**removeFromWaitingList** – When the host allows or rejects participants, the _removeFromWaitingList_ event is fired with the transaction_id of participants. This event is also received when other host allow or reject participants.
 
-```json
+```js
+meetingsession.addEventListener('removeFromWaitingList', (data) => {
+  // contains an object with field transactions which conatins array of transaction_id
+})
+```
+
+The participants returned from this listener need to be removed from the waiting room list since they are no longer in the waiting room. A unique identifier returned from the transactions is the key to identify the participants in the waiting room.
+
+### Meeting State
+
+A meeting can be opened or closed. Anyone can join an open meeting. But to join a closed meeting, one should wait for the host or need to be accepted by the host. The state of the room will be received through a _meetingstate_ listener. Event is fired while joining a meeting or the meeting state is changed while on meeting by the hosts.
+
+```js
+meetingsession.addEventListener('meetingstate', (data) => {
+  // contains lock room status
+})
+```
+
+Returned data is on this format.
+
+```js
 {
-transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
+    type: ”lock_room”,
+    state: boolean
 }
 ```
+
+State indicates whether the meeting is closed or open.
+
+<br />
+_true_ indicates that room is _closed_ and
+<br />
+_false_ indicates that room is _open_.
+<br />
+<br />
+Participants should not wait for this event to navigate to the waiting room.
+_roomstate_ is used for that purpose. _meetingstate_ is used to show the current
+status of a meeting and it can be used to show the current meeting status inside
+the meeting. One can change the meeting state using
+_hostLockMeetingAction_.{' '}
 
 ### Pause Video
 
@@ -184,9 +340,10 @@ transactions:['26e975c7-8fc0-c7b5-76b4-230e86174c4b']
 ```json
 {
 participants:['d61ce814-3916-4554-b068-80b29b898609']
-pause: true 
+pause: true
 }
 ```
+
 ### Update Participant List
 
 **updateparticipantlist**– event is received when the participant list changes, ie video, audio is turned on/off. particpant is speaking or not etc.
@@ -201,23 +358,64 @@ type: "video"
 
 ### Chat
 
-**chat** -  event is recieved when a new chat message has been recieved.
+**chat** - When another participant sends a message it receives through the _chat_ listener. Both private and public (Group) messages are received through this event.
 
 ```js
- {
-          status: "pending",
-          seen: true,
-          type: type,
-          title: "text",
-          isgroup: false,
-          participant_name: "Antony" ,
-          sender: "67d1260e-de97-4e7a-b296-6afbb16a80cd",
-          message: message,
-          timestamp: timestamp,
-          receiver: "5cgc60e-de97-4e7a-b296-6afbb16a80cd",
-          participant_id: "5cgc60e-de97-4e7a-b296-6afbb16a80cd"
-        };
- ```       
+meetingsession.addEventListener('chat', (data) => {
+  // errors occurred by the issues from user side//data.isgroup
+  if (data.isgroup) {
+    // group messages
+  } else {
+    //private messages
+  }
+})
+```
+
+Returned data contains :-
+
+```js
+{
+    status: “delivered” | ”pending”
+    seen: boolean
+    isgroup: boolean
+    type: “text”|”file”
+    participant_id: string
+    message: string
+    title: “text”
+    sender: string
+    timestamp: number;
+    participant_name: string;
+}
+```
+
+- **seen**:- it indicates whether a local participant has read this message. Right now, there is no way to know when a remote participant has read the message
+
+- **isgroup**:- indicates if the message is a group or private. For the group message, it will be true.
+
+- **type**:- it indicates if a message is a file or text. If it is a file, the message will be a link to that file.
+
+- **sender**:- contains the participant_id of the sender
+
+- **participant_id**:- contains the participant*id of the receiver. If it is a group, the whole participant will receive the message. So the data will be *"all*participant"* in this event
+
+- **message**:- message contains the chat / file send by the participants
+
+- **title**:- will always be _“text”_ (will be removed on refactoring)
+
+- **timestamp**:- contains the timestamp when the message is sent
+
+- **participant_name**:- contains the name of the participant who sent the message
+
+- **status**:- will be _“delivered”_ or _“pending”_. _“pending”_ indicates that a message has been sent to a remote participant and it’s not reached yet there. _“delivered”_ indicates that a message is delivered to the local participant and it’s not seen yet. Only the messages sent by local participants contain the status as _“pending”_. When it’s been delivered, we just need to update the status. The returned data to update local participant message is as follows :
+
+```js
+{
+    status: “delivered”
+    isgroup: boolean;
+    participant_id: string;
+    timestamp: number;
+}
+```
 
 ### Host Camera On Off
 
@@ -229,502 +427,1943 @@ participant_id:"81667683-945d-4427-ab23-93e5c5fe491c"
 state: true
 }
 ```
+
 ### Host
 
-**host** - triggers when a host functionality occurs.
+**host** - There are some features the host can perform in the meeting :
+
+- mute/unmute audio or video of other participants.
+- Kicks out a participants from a meeting
+- Ends the meeting for all participants
+- Raise down the raise-hand participants
+
+_host_ event fires when the host performs any of these actions.
 
 ```js
- {
-          title: "hostMuteUnmute",
-          mute: true,
-          participant_id: "81667683-945d-4427-ab23-93e5c5fe491c",
-          publisher_id: "34veD3-945d-4427-ab23-93e5c5fe491c",
-          stream: "video"
+meetingsession.addEventListener('host', (data) => {
+  if (data.title === 'hostEndForAll') {
+    // received when host ends the meeting for all
+  } else if (data.title === 'hostKickOut') {
+    // received when host kicks you out
+  } else if (data.title === 'hostMuteUnmute') {
+    if (data.stream === 'audio') {
+      // received when host mutes your mic
+    } else if (data.title === 'video') {
+      // received when host mutes your camera
+    }
+  } else if (data.title === 'down_hand_by_host') {
+    // received when host downs your raise hand
+  }
+})
+```
+
+One can perform actions based on the host's request using this listener. Returned data is as follows :
+
+- **hostEndForAll**:-
+
+```js
+{
+  title: 'hostEndForAll'
+  state: boolean
 }
 ```
+
+When an event is received SDK forcefully ends the meeting. Since user is no longer in the meeting they needs to be navigated out of the meeting page.
+
+- **hostMuteUnmute**:-
+
+```js
+{
+  title: "hostMuteUnmute",
+  mute:boolean,
+  participant_id: string,
+  publisher_id: string,
+  stream: "audio" | “video”
+}
+```
+
+When the host mutes/unmutes your video/audio _hostMuteUnmute_ event is received. When the host mutes your audio or video SDK forcefully mutes the participant. While the host requests to unmute, SDK won’t update the mute status. Instead, it only passes down the event so the participant can decide whether he/she should turn on the video/audio.
+
+- **hostKickOut**:-
+
+```js
+{
+  title: "hostKickOut",
+  state:boolean,
+  participant_id: string,
+}
+```
+
+Event is received when the host kicks you out of the meeting. The participant is no longer in the meeting and can be navigated outside the meeting. _Participant_id_ indicates the participant_id of the host who kicked you out.
+
+- **Down_hand_by_host**:-
+
+When the host removes your raise hand you will receive the event. SDK removes the raise hand forcefully and local participant should remove it front their list.
+
+```js
+{
+  title: "down_hand_by_host",
+  state:boolean,
+  participant_id: string,
+}
+```
+
+_Participant_id_ indicates the participant_id of the host who down handed you out.
 
 ### Device List Modified
 
-**deviceListModified** – event is received when device list or current device changes.
+**deviceListModified** – event is fired on certain circumstances
 
+- When there’s a change on device is detected (when a device is connected or removed).
+
+- After calling _listAvailableDevices_ to fetch device list.
+
+- After switching audio/video devices with _switchDevices_.
+
+```js
+meetingsession.addEventListener('deviceListModified', (data) => {
+  if (data.title === 'device_modified') {
+    // call listAvailableDevices to fetch the device which updates device list
+  }
+  if (data.title === 'currentdevice') {
+    // current device in use has been updated. update the device list accordingly
+  }
+})
+```
+
+_deviceListModified_ returns data with title _device_modified_ when a new audio/video device is added or removed. So the device list on the client side needs to be updated accordingly. _Currentdevice_ returns currently used audio/video device. The event is fired when calling _listAvailableDevices_ for initial device state and _switchDevices_ to inform currently used devices.
+
+_currentdevice_ returns audio video I/O device id which will be of string type. _currentdevice_ with reason _initial_state_ returns currently used I/O devices while reason with _update_state_ only returns device id, which has been changed. Other I/O which remains same will contain value of _unchanged_ in _update_state_.
+
+Sample returned data of _deviceListModified_ with title _currentdevice_ and reason _initial_state_ as follows:-
+
+```js
+{
+  title: "currentdevice",
+  reason: "initial_state",
+  currentDevice: {
+          audioInput: "0ef1ef67f4a04bb910fe6527892d7339a23a8bdfaf650956f56306546f1ca69b"
+          audioOutput: "136caf6a27fcdc960cfe70b55a765993bb72298070ddfdd356c19ec851ce50d2"
+          videoInput: "d5996c4305fdd7e80f5011215f235bb436e1014f6dcd66990ee33445cab5b3ac"
+                 }
+}
+```
+
+Sample returned data of _deviceListModified_ with title _currentdevice_ and reason _update_state_ as follows:-
 
 ```json
-currentDevice: {audioInput: 'default', audioOutput: 'default', videoInput: '59ad539e11bcf5415ffe028e51c2aaeb666323ab4a12e0d94e0debbc234090c5'}
-reason: "initial_state"
-title: "currentdevice"
-
-or 
-
-
-reason: "A device was added/removed"
-title: "device_modified"
-
+{
+  title: "currentdevice",
+  reason: "update_state",
+  currentDevice: {
+          audioInput: "0ef1ef67f4a04bb910fe6527892d7339a23a8bdfaf650956f56306546f1ca69b"
+          audioOutput: "unchanged"
+          videoInput: "unchanged"
+                 }
+}
 ```
+
+_deviceListModified_ should be added before calling _listAvailableDevices_ and _switchDevices_ to avoid missing the event. But it is advised to add this listener right after creating [MeetingSession.](/Electron#start-meeting-session)
 
 ### Left Participant
 
-**leavedParticipant** – event is received when a participant leaves the meeting.
-```json
-{
-      participant_id: “9f182432-fa3d-43df-8892-37677f5e3a94  ”
-      
-}
+**leavedParticipant** – When a participant leaves the meeting _leftparticipant_ event is fired to acknowledge other participants. Event is fired when a participant leaves a meeting, _leftparticipant_ occurs for both self participant and remote participant. _leftparticipant_ occurs on numerous occasion :
 
+- When a remote participant leaves the meeting
+- When self participant ends the meeting
+- When the host kicks out the self participant
+- When the host ends the meeting
+- On websocket close event (need to describe it other section)
+
+```js
+{
+  meetingsession.addEventListener('leftparticipant', (data) => {
+    // if it’s a remote participant remove the participant from the  list
+  })
+}
 ```
+
+_leftparticipant_ returns data with participant_id and name of the participant who left the meeting. Returned data will be the same for both local and remote participants.
 
 ### Error Handler
 
-**errorhandler** - return errors occured in sdk.
+**errorhandler** - Meetings can be interrupted or may not work due to some reasons. SDK passes information about this issue so clients can behave accordingly. It is important to acknowledge users about this issue which can be resolved on their part.
 
 ```js
-{
- title: "websocket_closed",
- reason : ""
-};
+meetingsession.addEventListener('errorhandler', (data) => {
+  // errors occurred by the issues from user side
+})
 ```
+
+_data_ with _title websocket_closed_ indicates that the meeting can no longer be continued from the user side since the connections are already closed for various reasons. _data_ with the title _device_error_ indicates an error occurred while creating a stream using mediadevices.
 
 ## Meeting Methods
 
-
 ### userLogin
+
 ```js
 userLogin ( userName : string, password : string  ) :   Promise <UserDataModel | HttpError>
 ```
+
 Logs in using the given username and password
 
 **Parameters**
-- **userName** : string 
+
+- **userName** : string
 - **password** : string
 
 **Returns** `Promise <UserDataModel | HttpError>`
 
-### User Logout
+### User Login
+
+The _userLogin_ function is used to log a user into the application. Once logged in, the user is able to start a new meeting with a new meeting id, schedule a meeting, and perform other actions.
+This function allows users to authenticate and access the features and functionality of the SDK.
+
 ```js
-userLogout ( ) :  Promise <any>
+ meetingsession.userLogin(userName,password)
+  .then((res)=>{
+     // contains device list information
+   })
+  .catch((e)=>{// handle error})
 ```
-Logs out and clear an active session.
 
-**Returns** `Promise <any>`
+_userLogin_ type is as follows:
 
-### AddApiHeader
+```js
+userLogin(
+    userName: string,
+    password: string
+)
+  .then((res)=>{
+     //login success
+   })
+  .catch((e)=>{// login failed})
+```
 
-```json
-AddApiHeader(config: {
-        token?: string | null,
-        optional?: { header: string, value: string }[]
-    }): void
+**userName** - userName is a string parameter.
 
-  ```  
-  **Parameters**
-  - token?: string | null
+**password** - password is a string parameter representing the user's password.
 
-  - optional?:  header: string, value: string 
+After login success response contains:
 
-  **Returns** `void`
+```js
+{
+  email: string
+  firstname: string
+  lastname: string
+  token: string
+  hoolva_user: string
+}
+```
 
-You can use this function to resume your login session if the token is available or add custom api header. token helps you to avoid using userLogin every time.
+**email** - email is a property that holds a string value, which can be any sequence of characters, representing the email of a user.
+
+**firstname** - firstname is a property that holds a string value, which can be any sequence of characters, representing the first name of a user.
+
+**lastname** - lastname is a property that holds a string value, which can be any sequence of characters, representing the last name of a user.
+
+**token** - token is a property that holds a string value, which could be an authentication token that could be used to identify a user.
+
+**hoolva_user** - hoolva_user is a property that holds a string value. This is to identify the user in hoolva.
+
+The [_AddApiHeader_](Electron#add-api-header) function can be used to retain the login session after the browser tab is reopened. To do this, the _hoolva_user_ token should be passed to the _token_ field in the _AddApiHeader_ function. This will allow the login session to be preserved and eliminate the need to log in again using credentials.
+In order to pass the _hoolva_user_ token, it must be stored in the database. This function allows users to maintain their login session across different browser sessions and improve the user experience.
+
+### User Logout
+
+To log out one needs to call the _userLogout_ function. This will terminate the login session.
+
+```js
+meetingsession.userLogout().then((res) => {
+  //log out successfully
+})
+```
+
+After a successful log out the function will return:
+
+```js{
+    status: "success";
+    message: "Logged out successfully";
+}
+```
+
+**status** - status is a property that holds a string value, It could represent the status of the operation indicating a successful logout.
+
+**message** - message is a property that holds a string value, It could hold a message that provides more information about the status of the operation, such as providing feedback that the logout was successful.
+
+### Add Api Header
+
+**AddApiHeader** can be used to retain login session or add headers to the api calls.
+
+```js
+meetingsession.AddApiHeader({ token, optional })
+```
+
+**token** - _Optional_ field used to retain a login session. type is string
+
+**optional** - _Optional_ field used to add headers to the api. Types as follows:
+
+```js
+Array<{header:string , value:string}>
+```
+
+**header** - key of the header in api.
+
+**value** - value of the header in api.
+
+Api header can be added as follows:
+
+```js
+meetingsession.AddApiHeader({
+  optional: [
+    {
+      header: 'sample',
+      value: 'value',
+    },
+  ],
+})
+```
+
+**optional** - optional is a parameter that holds an array of objects, each object contains two properties.
+
+**header** - header is a parameter that holds a string value, which represents the name of the header.
+
+**value** - value is a parameter that holds a string value, which represents the value of the header.
 
 ### Claim Login Session
+
 ```js
 claimLoginSession ( token : string  ) :  void
 ```
+
 You can use this to resume your login session if the token is available. This helps you to avoid using userLogin every time.
 
 **Parameters**
- - **token** : string 
- **Returns**  `void`
+
+- **token** : string
+  **Returns** `void`
 
 ### Forgot Password
+
 ```js
 forgotPassword ( email : string  ) :  any
 ```
+
 Resets the password by sending a resend link to the registered email address.
 
 **Parameters**
- - email : string 
 
-**Returns**  `any`
+- email : string
+
+**Returns** `any`
 
 ### Add Event Listener
+
+On SDK numerous events are occurring at a time. Meetings on the client side should be event driven. Events need to be handled on client side for a proper working of the meeting.
+Events can be listened using the _addEventListener_ function. Eventlistener can be used as follows:
+
 ```js
-addEventListener ( handler : string, eventListener : ( data: ObserverEventType ) => void ) :  void
+meetingsession.addEventListener(key, callback)
 ```
-You can add an event listener to capture the events coming from the SDK. This should be declared and used before any other functions.
 
-**Parameters**
-- handler : string, 
-- eventListener : ( data: ObserverEventType ) => void
+Listeners should be added right after creating MeetingSession. When an event occurs concurrent callback function is called [Meeting events](Electron#meeting-events)
 
-**Returns**  `void`
+Possible keys for listeners are :
+
+- **deviceListModified**
+
+- **leftparticipant**
+
+- **joinMeeting**
+
+- **host**
+
+- **networkState**
+
+- **participantList**
+
+- **streammodified**
+
+- **peopleWaiting**
+
+- **chat**
+
+- **removeFromWaitingList**
+
+- **roomState**
+
+- **streamReceived**
+
+- **updateparticipantlist**
+
+- **meetingstate**
+
+- **errorhandler**
 
 ### Pre Auth
+
+When a user needs to join a meeting he/she must authenticate before starting a meeting. Authentication can be done using passing meeting id and password to preAuth. user can also authenticate using sname.
+
+Joining the meeting with meetingId and password
+
 ```js
-preAuth ( meetingId : number, password : string, sname : string  ) :  Promise<MeetingSessionConfiguration>
+  meetingsession.preAuth({meetingId:6382448382,password:”dJbsU5”})
+   .then((res)=>{
+     // contains response
+})
+   .catch()
 ```
-You can use this function to enter a meeting id and password. This should be used before startMeetingSession.
 
+For authenticating a meeting it’s necessary to pass sname or meetingId to preauth. For authenticating to the meeting which doesn’t have a password,
+one just needs to pass only the meetingId. Inorder to find if a meeting needs a password pass the meetingId first. If the meeting has a password it will return an error code 401. In that case we need to re authenticate with meetingId and password.
 
-**Parameters**
-- meetingId : number, 
-- password : string, 
-- sname : string 
+**meetingId** - meetingId is a parameter that expect a number value, which represents the ID of a meeting.
 
-**Returns**  `Promise<MeetingSessionConfiguration>`
+**password** - the password is a parameter that expect a string value, which represents the password to join the meeting.
+
+Joining the meeting with sname
+
+```js
+ meetingsession.preAuth({sname:”cHskOl”})
+   .then((res)=>{
+     // contains response
+   })
+   .catch((e)=>{
+    // handle error
+   })
+```
+
+sname is a unique string which we receive in meeting url parameter in [meeting invite](Electron#meeting-invite) function. When you call meeting invite function you will get a
+meeting url as response along with other data. When you parse the meeting url you will get a rtdf value which is atob encoded. When you decode this rtdf value you will the sname. The decoded value is stringified value which need to json parsed. While joining the meeting using sname, we just need to pass the sname only, meetingid and password is not required.
+
+Response will be same if you join with meeting id and password or with sname.
+
+```js
+{
+    audio_bridge: boolean;
+    auto_record: boolean;
+    dial_in: boolean;
+    dial_out: boolean;
+    duration: number;
+    host: boolean;
+    join_mode: “open” | “close” | “lock”;
+    meetingId: number;
+    name: string;
+    description: null | string;
+    password: string;
+}
+```
+
+**audio_bridge** - audio_bridge is a property that holds a boolean value, which can be either true or false. it could represent if the audio bridge is enabled or not. returns true when audio bridge is enabled.
+
+**auto \_record** - auto_record is a property that holds a boolean value, which can be either true or false. it could represent if automatic recording is enabled or not. returns true when automatic recording of the meeting is enabled.
+
+**duration** - duration is a property that holds a number value, which could represent the duration of the meeting. duration is represented in seconds.
+
+**meetingId** - meetingId is a property that holds a number value, which could represent the id of the meeting.
+
+**name** - name is a property that holds a string value, which could represent the name of the meeting. This field is often used to represent the meeting topic.
+
+**description** - is a property that holds a string value or null, which could represent the meeting description or agenda if there is any.
+
+**dial_in**- dial_in is a property that holds a boolean value, which can be either true or false. it could represent if dial-in is enabled or not. Returns true if the dial in is enabled.
+
+**dial_out** - dial_in is a property that holds a boolean value, which can be either true or false. it could represent if dial-out is enabled or not. Returns true if dial out is enabled.
+
+**host** - host is a property that holds a boolean value, which can be either true or false. it could represent if the user is the host of the meeting or not. Returns true if the current user is the host of this meeting.
+
+**join_mode** - join_mode is a property that holds a string value; it can hold one of the three string literals- ”open”, “close” or “lock”. If join mode is open it represents an open meeting which means guest users are allowed to join the meeting at any time. If join mode is close, guest users are not allowed to join the meeting they have to wait till host join the meeting. If join mode is lock, guest users have to wait till host join the meeting and unlock the meeting. These modes are default state of the meeting while meeting is scheduled. These values are subject to change when host join the meeting and change meeting join mode to lock. In that case, when a user join the meeting he should always listen to the [roomState](Electron#room-state) to find out the actual join mode.
+
+**password** - password is a property that holds a string value, which could represent the password to join the meeting.
 
 ### Scheduled Meeting Create
+
+_scheduledMeetingCreate_ method is used to schedule the meeting with desired configurations. This method is only available for the authorized users.
+If parameters are not specified, the _scheduledMeetingCreate_ function will still create a meeting with default configurations. The data types for the parameters of the _scheduledMeetingCreate_ function are as follows:
+
 ```js
-scheduledMeetingCreate ( auto_record : boolean, dial_in : boolean, e2ee : boolean, expiry_date : number, join_mode : string, name : string, password : string, pin : number, record_mode : string, recurrence : boolean, recurrence_date : number, recurrence_repeat : number, recurrence_type : string, recurrence_weekdays : , start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+scheduledMeetingCreate(meetingData?:{
+       name: string,
+       description: string,
+       auto_record: boolean,
+       dial_in: boolean,
+       join_mode: string,
+       password: string,
+       pin: number | null,
+       duration: number,
+       record_mode: string,
+       recurrence: boolean,
+       recurrence_repeat: number | null,
+       recurrence_day: number | null,
+       recurrence_type: number | null,
+       recurrence_weekdays: Array<unknown>,
+       recurrence_date: number | null,
+       start_date_time: number,
+       time_zone: string,
+  })
 ```
-Schedules a meeting with set parameters.You can pass the parameters to create a more customized meeting.This will only schedule the meeting for a later date and time.Scheduled meetings are valid for 24 hours from the meeting start date & time. Currently e2e is an experimental feature.
 
-**Parameters**
-- auto_record : boolean, 
-- dial_in : boolean, 
-- e2ee : boolean, 
-- expiry_date : number, 
-- join_mode : string, 
-- name : string, 
-- password : string, 
-- pin : number, 
-- record_mode : string, 
-- recurrence : boolean, 
-- recurrence_date : number, 
-- recurrence_repeat : number, 
-- recurrence_type : string, 
-- recurrence_weekdays : , 
-- start_date_time : number, 
-- time_zone : string 
+**name** - name of the meeting. If not added default value will be "Discussion".
 
-**Returns**   `Promise <HttpError | MeetingCreateModel>`
+**description** - Description or agenda of the meeting.
+
+**auto_record** - represents whether the meeting should be automatically recorded or not. Default value will be false.
+
+**dial_in** - represents whether the participants can join the meeting via dial-in or not. Default value will be true.
+
+**join_mode** - indicates the default state of the meeting. Possible values are “open” and “locked”. Default value will be “locked”.
+
+**password** - password of the meeting. If not passed a random password will be generated.
+
+**pin** - indicates the pin of the meeting. If not passed a random pin will be generated.
+
+**duration** - indicates duration of the meeting in seconds.
+
+**record_mode** - property that holds a string value, which represents the recording mode of the meeting. Available recording modes are “audio_only”,“host_only”, “host_with_others”. Please refer cloud recording for more information.
+
+**recurrence** - indicates if a meeting should have multiple occurrence. default value will be false.
+
+**recurrence_repeat** - property that holds a number or null, which represents the number of times the meeting will repeat.
+
+**recurrence_day** - property that holds a number or null, which represents the day of the week of the recurring meeting.
+
+**recurrence_type** - property that holds a number or null, which represents the type of recurrence.
+
+**recurrence_weekdays** - property that holds an array of unknown, which represents the weekdays of the recurrence.
+
+**recurrence_date** - property that holds a number or null, which represents the date of the recurrence.
+
+**start_date_time** - indicates the start time of the meeting. It is indicating the valid time of the Meeting.which represents the start date and time of the meeting.
+
+**time_zone** - time_zone of the person who is creating the meeting. If not given, SDK will select user’s time zone by default.
+
+An example scheduleMeetingCreate can be as follows:
+
+```js
+meetingsession.scheduledMeetingCreate({
+       name: “Discussion”,
+       description: “”,
+       auto_record: false,
+       dial_in: false,
+       join_mode: “locked”,
+       password: “QbI5BV”,
+       pin: 272584,
+       duration: 3600,
+       record_mode: "host_with_others",
+       recurrence: false,
+       recurrence_repeat: null,
+       recurrence_day: null,
+            recurrence_type: null,
+       recurrence_weekdays: null,
+       recurrence_date: null,
+       start_date_time: 16723789,
+       time_zone: "Asia/Kolkata",
+     })
+      .then((res)=>{
+     //response
+      })
+```
 
 ### Create Instant Meeting
+
+_createInstantMeeting_ method is to create a new meeting and join to it immediately.
+This is a convenient way to start a meeting quickly, as it creates a new meeting with default settings. This method is only available for the authorized users.
+
 ```js
-createInstantMeeting ( auto_record : boolean, dial_in : boolean, e2ee : boolean, join_mode : , name : string, password : string, pin : number, recurrence : boolean, start_date_time : number, time_zone : string  ) :   Promise <HttpError | MeetingCreateModel>
+meetingsession.createInstantMeeting({
+       name: “Discussion”,
+       password: “QbI5BV”,
+       recurrence: false,
+       join_mode: “locked”,
+       time_zone: "Asia/Kolkata",
+       pin: 272584,
+       dial_in: true,
+       auto_record: false,
+       start_date_time: 16723789,
+       e2ee: false
+      })
+      .then((res)=>{
+     //response
+      })
 ```
-Creates a meeting with editable parameters.If parameters are not edited, creates a meeting with default settings. The difference here when comparing with scheduledMeetingCreate is that createInstantMeeting will create a meeting and join to it. This is very useful to create and join a meeting instantly.
 
-**Parameters**
-- auto_record : boolean, 
-- dial_in : boolean, 
-- e2ee : boolean, 
-- join_mode : , 
-- name : string, 
-- password : string, 
-- pin : number, 
-- recurrence : boolean, 
-- start_date_time : number, 
-- time_zone : string 
+If no parameters are specified, the function will create a meeting with default settings. This is a convenient way to start a meeting immediately.
 
-**Returns**  `Promise <HttpError | MeetingCreateModel>`
+Data type of _createInstantMeeting_ is as follows:
+
+```js
+createInstantMeeting(meetingData?:{
+       name?: string,
+       password?: string,
+       recurrence?: boolean,
+       join_mode?: string,
+       time_zone?: string,
+       pin?: number,
+       dial_in?: boolean,
+       auto_record?: boolean,
+       start_date_time?: number,
+  })
+```
+
+Default parameters of createInstantMeeting are as follows:
+
+**name** - the name of the meeting, with a default value of "Discussion" if not specified.
+
+**password** - password for the meeting, which will be randomly generated if not provided.
+
+**recurrence** - indicating whether the meeting should take place on multiple days, with a default value of false.
+
+**join_mode** - the default state of the meeting, with possible values of "open" or "locked", and a default value of "locked".
+
+**time_zone** - the time zone of the person creating the meeting, which will be collected by the SDK if not provided.
+
+**pin** - a pin for the meeting, which will be randomly generated if not provided.
+
+**dial_in** - indicating whether the meeting can be joined by phone, with a default value of true.
+
+**auto_record** - indicating whether the meeting will be recorded automatically, with a default value of false. The default record mode will be host_only in this case.
+
+**start_date_time** - the start date and time of the meeting.
 
 ### Start Meeting Session
+
+The _startMeetingSession_ function is used to start a new meeting after a successful authentication using _preAuth_.
+To start the meeting, the _startMeetingSession_ function should be called and passed the name, audio, and video choices and the state of the meeting.
+
 ```js
-startMeetingSession ( audio : boolean, video : boolean, displayName : string  ) :  Promise<void>
-Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth)
+meetingsession.startMeetingSession(audio, video, DisplayName)
 ```
 
-Starts a meeting. This function should only be used after creating a meeting (scheduledMeetingCreate or createInstantMeeting) or entering meeting details (preAuth).
+_startMeetingSession_ will not work without authentication.
 
-**Parameters**
- - audio : boolean, 
- - video : boolean, 
- - displayName : string 
+```js
+startMeetingSession((audio: boolean), (video: boolean), (DisplayName: string))
+```
 
-**Returns**  `Promise<void>`
+**audio** - specifies whether the client should join the meeting with audio enabled.
+
+**video** - specifies whether the client should join the meeting with video enabled.
+
+**DisplayName** - indicates the display name of the participant.
+
+After the _startMeetingSession_ function is called, the _roomState_ event is fired to indicate the state of the room.
+This event allows the client to track and update the status of the meeting.
 
 ### Meeting List
+
+The _meetingList_ function can be used to retrieve a list of meetings that a user can join. By providing the date and time, meetings which are scheduled during that period will be retrived. Optionally, you can just give the start date and time to retrieve all the meeting scheduled from that time till the current date and time. This method is only available for the authorized users.
+
 ```js
-meetingList ( curr_date_time : number  ) :   Promise <HttpError | MeetingListModel>
+meetingsession.meetingList(start_date_time, end_date_time)
+.then((res)=>{
+     //details of the meeting with meeting_id which is passed to this
+       function
+   })
 ```
-Shows a list of upcoming meetings from a given time.
 
+**start_date_time** - scheduled meetings will be returned from that time onwards.
 
-**Parameters**
- - curr_date_time : number 
+**end_date_time** - (_optional parameter_) Only the meetings between start_date_time and end_date_time will be returned.
 
-**Returns**   `Promise <HttpError | MeetingListModel>`
+```js
+meetingList((start_date_time: number), (end_date_time: number))
+```
+
+Returned data is as follows:
+
+```js
+Array<{
+       name: string,
+       description: string,
+       auto_record: boolean,
+       dial_in: boolean,
+       join_mode: string,
+       password: string,
+       pin: number | null,
+       duration: number,
+       record_mode: string,
+       recurrence: boolean,
+       recurrence_repeat: number | null,
+       recurrence_day: number | null,
+       recurrence_type: number | null,
+
+       recurrence_weekdays: Array<unknown>,
+       recurrence_date: number | null,
+       start_date_time: number,
+       time_zone: string,
+  }>
+```
+
+**name** - the name of the meeting, with a default value of "Discussion".
+
+**description** - a description of the meeting.
+
+**auto_record** - a boolean value indicating whether the meeting should be automatically recorded, with a default value of false.
+
+**dial_in** - a boolean value indicating whether dial-in options should be enabled for the meeting, with a default value of true.
+
+**join_mode** - a string indicating the default state of the meeting when participants join. Possible values are "open" and "locked", with a default value of "locked".
+
+**password** - a string representing the password required to join the meeting. If not provided, a random password will be generated.
+
+**pin** - a string representing the PIN required to join the meeting. If not provided, a random PIN will be generated.
+
+**duration** - the duration of the meeting in minutes.
+
+**record_mode** - property that holds a string value, which represents the recording mode of the meeting.
+
+**recurrence** - a boolean value indicating whether the meeting should recur on multiple days, with a default value of false.
+
+**recurrence_repeat** - property that holds a number or null, which represents the number of times the meeting will repeat.
+
+**recurrence_day** - property that holds a number or null, which represents the day of the week of the recurring meeting.
+
+**recurrence_type** - property that holds a number or null, which represents the type of recurrence.
+
+**recurrence_weekdays** - property that holds an array of unknown, which represents the weekdays of the recurrence.
+
+**recurrence_date** - property that holds a number or null, which represents the date of the recurrence.
+
+**start_date_time** - the start time of the meeting in ISO-8601 format. This specifies the time at which the meeting is valid.
+
+**time_zone** - the time zone of the person scheduling the meeting. If not provided, the time zone will be determined by the SDK.
 
 ### Meeting Invite
+
+The _meetingInvite_ function is used to get a meeting url that can be shared with other participants to invite them to a meeting. To use this function, you need to pass in the UUID of the desired meeting.
+The resulting _launchMeetingUrl_ can then be shared with other participants to allow them to join the meeting.
+
 ```js
-meetingInvite ( meeting_uuid : string  ) :   Promise <HttpError | MeetingInviteModel>
+meetingsession.meetingInvite(meeting_uuid).then((res) => {
+  //response contains data which include meeting invite link
+})
 ```
-Returns the meeting invite URL for easy sharing.
 
+**meeting_uuid** - a unique id in string which represent the meeting.
 
-**Parameters**
- - meeting_uuid : string 
+returned data contains data as follows:
 
-**Returns**   `Promise <HttpError | MeetingInviteModel>`
+```js
+{
+  tenant: string
+  pin: number | null
+  password: string
+  meeting_url: string
+  meeting_topic: string
+  host: string
+  meeting_id: 1234567890
+  did_info: unknown
+  date_time: unknown
+}
+```
+
+**tenant** - the tenant name or organization name associated with the meeting.
+
+**pin** - the pin number for the meeting.
+
+**password** - the password for the meeting (if one is set).
+
+**meeting_url** - a meeting url that can be used to join the meeting.
+
+**meeting_topic** - a description of the meeting.
+
+**host** - the host of the meeting.
+
+**meeting_id** - the unique identifier for the meeting.
+
+### Delete Meeting
+
+Scheduled meeting can be deleted using _deleteMeeting_ function. This method is only available for the authorized users.
+
+```js
+meetingsession.deleteMeeting(meeting_uuid).then((res) => {
+  //meeting has successfully deleted
+})
+```
+
+**meeting_uuid** - a unique identifier which used to identify the meeting.
+
+### Update Schedule Meeting
+
+Scheduled meetings can be updated via _UpdateScheduleMeeting_. This method is only available for the authorized users.
+
+```js
+meetingsession.updateScheduleMeeting({
+       name: “Discussion”,
+       description: “”,
+       auto_record: false,
+       dial_in: false,
+       join_mode: “locked”,
+       password: “QbI5BV”,
+       pin: 272584,
+       duration: 3600,
+       record_mode: "host_with_others",
+       recurrence: false,
+       recurrence_repeat: null,
+       recurrence_day: null,
+       recurrence_type: null,
+       recurrence_weekdays: null,
+       recurrence_date: null,
+       start_date_time: 16723789,
+       time_zone: "Asia/Kolkata",
+     })
+.then((res)=>{
+     //meeting has successfully updated
+   })
+```
+
+When updating a meeting using the _UpdateScheduleMeeting_ function, you only need to provide the updated fields.
+You do not need to pass all of the data for the meeting again. The data types for the parameters of the _UpdateScheduleMeeting_ function are as follows:
+
+```js
+UpdateScheduleMeeting(meetingData?:{
+       name: string,
+       description: string,
+       auto_record: boolean,
+       dial_in: boolean,
+       join_mode: string,
+       password: string,
+       pin: number | null,
+       duration: number,
+       record_mode: string,
+       recurrence: boolean,
+       recurrence_repeat: number | null,
+       recurrence_day: number | null,
+       recurrence_type: number | null,
+       recurrence_weekdays: Array<unknown>,
+       recurrence_date: number | null,
+       start_date_time: number,
+       time_zone: string,
+  })
+```
+
+**name** - name of the meeting. If not added default value will be "Discussion".
+
+**description** - Description of the meeting.
+
+**auto_record** - represents whether the meeting should be automatically recorded or not. Default value will be false.
+
+**dial_in** - which represents whether the participants can join the meeting via dial-in or not. Default value will be true.
+
+**join_mode** - indicates the default state of the meeting. Possible values are “open” and “locked”. Default value will be “locked”.
+
+**password** - password of the meeting. If not passed it will be randomly generated.
+
+**pin** - indicates the pin of the meeting. If not passed it will be randomly generated.
+
+**duration** - indicates duration of the meeting in minutes.
+
+**record_mode** - property that holds a string value, which represents the recording mode of the meeting.
+
+**recurrence** - indicates if a meeting should take place on multiple days. default value will be false.
+
+**recurrence_repeat** - property that holds a number or null, which represents the number of times the meeting will repeat.
+
+**recurrence_day** - property that holds a number or null, which represents the day of the week of the recurring meeting.
+
+**recurrence_type** - property that holds a number or null, which represents the type of recurrence.
+
+**recurrence_weekdays** - property that holds an array of unknown, which represents the weekdays of the recurrence.
+
+**recurrence_date** - property that holds a number or null, which represents the date of the recurrence.
+
+**start_date_time** - indicates the start time of the meeting. It is indicating the valid time of the Meeting.which represents the start date and time of the meeting.
+
+**time_zone** - time_zone of the person who is creating the meeting. If not passed it will be collected by the SDK.
+
+### Get Schedule Meeting
+
+To retrieve details about a specific meeting, you can use the _getScheduleMeeting_ function and provide the _meeting_id_ as an input. This method is only available for the authorized users.
+
+```js
+meetingsession.getScheduleMeeting(meeting_id)
+.then((res)=>{
+     //details of the meeting with meeting_id which is passed to this
+       function
+   })
+```
+
+**meeting_id** - the unique identifier for the meeting.
+
+The returned data includes the following information:
+
+```js
+{
+       name: string,
+       description: string,
+       auto_record: boolean,
+       dial_in: boolean,
+       join_mode: string,
+       password: string,
+       pin: number | null,
+       duration: number,
+       record_mode: string,
+       recurrence: boolean,
+       recurrence_repeat: number | null,
+       recurrence_day: number | null,
+       recurrence_type: number | null,
+       recurrence_weekdays: Array<unknown>,
+       recurrence_date: number | null,
+       start_date_time: number,
+       time_zone: string,
+  }
+```
+
+**name** - name of the meeting. If not added default value will be "Discussion".
+
+**description** - Description of the meeting.
+
+**auto_record** - represents whether the meeting should be automatically recorded or not. Default value will be false.
+
+**dial_in** - which represents whether the participants can join the meeting via dial-in or not. Default value will be true.
+
+**join_mode** - indicates the default state of the meeting. Possible values are “open” and “locked”. Default value will be “locked”.
+
+**password** - password of the meeting. If not passed it will be randomly generated.
+
+**pin** - indicates the pin of the meeting. If not passed it will be randomly generated.
+
+**duration** - indicates duration of the meeting in minutes.
+
+**record_mode** - property that holds a string value, which represents the recording mode of the meeting.
+
+**recurrence** - indicates if a meeting should take place on multiple days. default value will be false.
+
+**recurrence_repeat** - property that holds a number or null, which represents the number of times the meeting will repeat.
+
+**recurrence_day** - property that holds a number or null, which represents the day of the week of the recurring meeting.
+
+**recurrence_type** - property that holds a number or null, which represents the type of recurrence.
+
+**recurrence_weekdays** - property that holds an array of unknown, which represents the weekdays of the recurrence.
+
+**recurrence_date** - property that holds a number or null, which represents the date of the recurrence.
+
+**start_date_time** - indicates the start time of the meeting. It is indicating the valid time of the Meeting.which represents the start date and time of the meeting.
+
+**time_zone** - time_zone of the person who is creating the meeting. If not passed it will be collected by the SDK.
 
 ### Get Stream
+
+The _getStream_ function allows you to access the _MediaStream_ of a particular participant. It returns a _MediaStream_ object for the participant in the meeting.
+This function is useful to skip SDK’s binding method and manually manage the stream. Another use case can be when showing a stream in a child window in electron.
+
 ```js
-getStream(participant_id: string[]): { participant_id: string, stream: MediaStream }[] | null
-````
-Returns Mediastream of participants.
-
-**Parameters**
- - participant_id: string
- 
- - Stream: MediaStream
-
- **Returns** `null`
-
- ### Generate Stream
- 
-```js
-generateStream(stream: "video" | "audio" | "both", options?: MediaTrackConstraints): Promise<MediaStream | null>
+meetingsession.getStream(participantsId)
 ```
- 
- Generates Mediastream and return it to the client.
 
-**Parameters**
- - stream: "video" | "audio" | "both"
+**participantId** - array of participant_id - returns videoStream of these participants. If the participantId is empty or contains participants with no video it will return an error.
 
- - options?: MediaTrackConstraints
+Returned data type is as follows:
 
-**Returns** `null`
+```js
+Array<{participant_id:string , stream:Mediastream}>
+```
+
+**stream** - stream is a property that holds a MediaStream object, it represents the media stream of the participant.
+
+### Generate Stream
+
+The _generateStream_ function can be used to create a video and/or audio stream. It returns a _MediaStream_ object that can be used to create a stream with a video track, an audio track, or both.
+
+```js
+meetingsession.generateStream(participant_id, mute, stream).then((stream) => {
+  //received stream with track
+})
+```
+
+Data type of _hostManageParticipantsStream_ is as follows:
+
+```js
+generateStream(
+    stream: ”audio” | “video” | ”both”
+    options: MediaTrackConstraints,
+  )
+```
+
+**stream** - indicates which stream needs to be created. “audio” creates the audio stream on the track. “video” creates the video stream on the track. “Both” creates both audio and video on single mediaStream.
+
+**Options** - specifies the property of requested streams.
+
+```js
+{
+    aspectRatio?: ConstrainDouble;
+    deviceId?: ConstrainDOMString;
+    echoCancellation?: ConstrainBoolean;
+    frameRate?: ConstrainDouble;
+    height?: ConstrainULong;
+    width?: ConstrainULong;
+}
+```
+
+**device_Id** - specifying a device ID or an array of device IDs which are acceptable and/or required.
+
+**echoCancellation** - object specifying whether or not echo cancellation is preferred and/or required.
+
+**aspectRatio** - specifying the video aspect ratio or range of aspect ratios which are acceptable and/or required. Eg, for 4:3 give 1.3333 and for 16:9 give 1.7777.
+
+**frameRate** - specifying the frame rate or range of frame rates which are acceptable and/or required.
+
+**height** - specifying the video height or range of heights which are acceptable and/or required.
+
+**width** - specifying the video width or range of widths which are acceptable and/or required.
 
 ### Close Stream
 
+The _closeStream_ function is used to destroy a stream that was created using the generateStream function. It is important to use closeStream to remove “camera in use” (the green light next to the camera).
+
 ```js
-closeStream(stream: MediaStream): void
+meetingsession.closeStream(mediaStream)
 ```
-close the streams created by generateStream
 
-**Parameters**
- - stream: MediaStream
-
-**Returns** `void`
+**mediaStream** - response received from _generateStream_.
 
 ### Mute Stream Action
+
+The _muteStreamAction_ function is used to mute or unmute the audio and video of a local participant while in a meeting. This function allows the local participant to control their audio and video during the meeting.
+It is important to note that the _muteStreamAction_ function can only be called inside a meeting.
+
 ```js
-muteStreamAction ( participant_id : string, stream : string, mute : string  ) :  void
+meetingsession.muteStreamAction(participant_id, stream, muteState)
 ```
 
-Mutes/unmutes the audio and starts/stops the video of the participant. This is to manage the self microphone and camera. You cannot manage other participant's audio or video with this message.
+_muteStreamAction_ type is as follows:
 
-
-**Parameters**
- - participant_id : string, 
- - stream : string, 
- - mute : string 
-
-**Returns**    `void`
-
-### Content Share Action
 ```js
-contentShareAction ( audio : boolean, video : boolean  ) :  void
+muteStreamAction(
+    participant_id: string,
+    stream: ”camera” | “mic”,
+    muteState: boolean,
+)
 ```
-You can start a screen share using this function. You can pass audio and video as true to start the screenshare. To stop an on going screenshare you can pass false to audio and video. You cannot start contentShare with passing only audio as true and video as false but you can pass video as true and audio as false.
 
+**participant_id** - specifies the participant_id of the local participant.
 
-**Parameters**
- - audio : boolean, 
- - video : boolean 
+**stream** - indicates which device, camera for video and mic for audio.
 
-**Returns**     `void`
+**mutestate** - specifies the mute status of the stream. true indicates that the stream should be muted, and false indicates that it should be unmuted.
+
+It is important to note that the mute status on the participant list should not be updated immediately after calling the _muteStreamAction_ function. Instead, the [_updateParticipantList_](Electron#update-participant-list) event should be waited for to update the mute status. This event is fired after the _muteStreamAction_ function is called to update the local participant list.
+This function allows the local participant to control their audio and video during the meeting.
+
+### Content Share Action [for web]
+
+To share the screen during a meeting, the _contentShareAction_ function can be called to capture and share the screen.
+This function allows participants to share their screen with others in the meeting. It can be used to present presentations, demos, or other visual content during the meeting.
+
+```js
+meetingsession.contentShareAction(audio, video)
+```
+
+Data type is as follows:
+
+```js
+contentShareAction((audio: boolean), (video: boolean))
+```
+
+**audio** - specifies whether the screenshare should capture audio. It is important to note that not all screen shares are able to capture audio, so this option ensures that audio is captured if it is available.
+
+**video** - set video to true to capture the screenshare and false to stop capture.
+
+To stop an ongoing screen share, false can be passed to both the audio and video parameters. It is not possible to start a screenshare by passing only audio as true and video as false, but it is possible to pass video as true and audio as false.
+
+After the _contentShareAction_ function is called, the _updateParticipantList_ event is fired to update the local participant list. The streamReceived event is also received for remote participants when the stream is ready. The stream will not be received for the participant who is currently sharing the screen. This function allows participants to share their screen with others in the meeting.
+
+### Content Share Action [only for Electron]
+
+This function allows participants to share their screen with others in the meeting using Electron. It can be used to present presentations, demos, or other visual content during the meeting.
+
+```js
+meetingsession.contentShareAction(audio, video, options)
+```
+
+Data type of contentShareAction is as follows:
+
+```js
+contentShareAction(
+  (audio: boolean),
+  (video: boolean),
+  (options: {
+    chromeMediaSourceId: boolean,
+  })
+)
+```
+
+**audio** - specifies whether the screenshare should capture audio. It is important to note that not all screen shares are able to capture audio, so this option ensures that audio is captured if it is available.
+
+**video** - specifies whether the screenshare should capture video.
+
+**options** - an object that contains a _chromeMediaSourceId_ field. The _chromeMediaSourceId_ field indicates the id of the screen that needs to be shared. In order to get the _chromeMediaSourceId_, some code needs to be added to the main process.
+
+This function allows participants to share their screen with others in the meeting using Electron. It can be used to present presentations, demos, or other visual content during the meeting.
+
+```js
+const { desktopCapturer } = require('electron')
+
+desktopCapturer
+  .getSources({ types: ['window', 'screen'] })
+  .then(async (sources) => {
+    for (const source of sources) {
+      if (source.name === 'Electron') {
+        mainWindow.webContents.send('SET_SOURCE', source.id)
+        return
+      }
+    }
+  })
+```
+
+To capture the screen in Electron, more information can be found in the official Electron [documentation.](https://www.electronjs.org/docs/latest/api/desktop-capturer)
 
 ### Raise Hand Action
+
+A participant can raise their hand on the meeting to contribute a point or ask a question.
+
 ```js
-raiseHandAction ( raise : boolean  ) :  void
+meetingsession.raiseHandAction(state)
 ```
-Raises/lowers hand to notify other participants.
 
+state- a boolean field which indicates a participant should raise hand or down the hand.
 
-**Parameters**
- - raise : boolean 
-
-**Returns**    `void`
+[_updateparticipantlist_](Electron#update-participant-list) event is fired after the _raiseHandAction_ to update the local participant list.
 
 ### Send Message
+
+Local participants can use _sendMessage_ to send texts or files to other participants.
+
 ```js
-sendMessage ( message : , type : string, title : string, participant_id ? : string  ) :  Promise<void>
+meetingsession.sendMessage(message, type, participant_id)
 ```
-Sends texts/files to other participants.This can be used to implement in-meeting chat functionalities.
-The messages and files transferred will be valid till the end of that meeting session.
 
+Data type of _sendMessage_ is as follows:
 
+```jssendMessage(
+    message: string | Blob,
+    type: “text” | ”file”,
+    participant_id: string,
+)
+```
 
-**Parameters**
- - message : , 
- - type : string, 
- - title : string, 
-- optional participant_id : string 
+**message** - indicates the message that needs to be sent to another participant.
 
-**Returns**     `Promise<void>`
+**type** - specifies whether the message is a text or a file.
+
+**participant_id** - an _optional field_ that specifies which participant the message should be sent to. If the message is for all the participants in the meeting, there is no need to specify the participant_id.
+
+After the _sendMessage_ function is called, a _chat_ event is fired to update or add the message to the chat list.
 
 ### List Available Devices
-```js
-listAvailableDevices ( ) :  Promise<ListDeviceType>
-```
-Shows a list of available input and output devices to choose from
 
-**Returns**     `Promise<ListDeviceType>`
+The listAvailableDevices function is used to retrieve a list of all available media devices. It returns an array of objects, each with details about a specific device.
+
+```js
+meetingsession.listAvailableDevices().then((res) => {
+  // contains device list information
+})
+```
+
+The returned data includes the device property, which holds the name of the device, the id property, which is a unique identifier for the device, and the type property, which specifies the type of media device.
+
+```js
+Array<{
+    device: string,
+    id: string,
+    type: "audioInput" | "audioOutput" | "videoInput" ,
+}>
+```
+
+**device** - contains the device name.
+
+**id** - contains an unique id of the device.
+
+**type** - defines which type of media device.
+
+The deviceListModified event is fired when the currently used media device is changed. It is important to ensure that the currently used device in the SDK and on the client side are in sync. [deviceListModified](Electron#device-list-modified) event allows the client to track and update the media devices being used in the meeting.
 
 ### Switch Devices
+
+The _switchDevices_ function is used to change the audio or video device being used in the meeting. To switch devices, the device id of the desired device can be passed to the _switchDevices_ function.
+This allows the client to switch between different audio and video devices during a meeting.
+
 ```js
-switchDevices ( deviceId : string, device : string, bindId ? : string  ) :  void
+meetingsession.switchDevices(device_id, device, bindId)
 ```
-Allows participants to change their input or output devices to a new one.
 
-**Parameters**
- - deviceId : string, 
- - device : string, 
- - optional bindId : string 
+The _switchDevices_ function is used to change the audio or video device being used in the meeting. It takes three parameters:
 
-**Returns**     `void`
+```js
+switchDevices(
+    device_id: string,
+    device: "audioInput" | "audioOutput" | "videoInput",
+    bindId?: string
+)
+```
+
+**device_id** - unique identifier of the device that needs to be switched.
+
+**device** - the type of device that needs to be switched (e.g. audio, video).
+
+**bindId** - _(optional)_ and should only be passed when switching the audio output device, as a new stream needs to be bound to the audio element.
+
+After the _switchDevices_ function is called, the deviceListModified event is fired, which returns the currently used devices. Note that it only returns the device that was changed. This event allows the client to update the list of currently used devices and ensure that the correct devices are being used in the meeting.
 
 ### Stream Bind
+
+The _streamBind_ function is used to bind a stream to a specific video or audio element. When a stream is ready on the SDK, it will fire a _streamReceived_ event. When this event is received, the _streamBind_ function can be used to bind the stream to the desired element.
+This allows the SDK to display streams from other participants in the meeting.
+
 ```js
-streamBind ( stream : string, participant_id : string, tile_id : string  ) :  void
+meetingsession.streamBind(stream, participant_id, tile_id)
 ```
-Binds participant’s Audio/video/screenshare to an element. Use this only after elements has been created.
 
-**Parameters**
- - stream : string, 
- - participant_id : string, 
- - tile_id : string 
+```js
+streamBind(
+  (stream: 'audio' | 'video' | 'screenshare'),
+  (participant_id: string),
+  (tile_id: string)
+)
+```
 
-**Returns**     `void`
+**stream** - specifies the type of stream that needs to be bound (e.g. video,audio,screen share).
+
+**participant_id** - participant_id of participant whose stream needs to be bound. For audio streams, the participant_id will be the local participant's participant_id.
+
+**tile_id** - indicates the DOM element id where the stream should be bound.
+
+It is important to note that the DOM element should be inserted in the web page before calling the _streamBind_ function. This function allows the SDK to display streams from other participants in the meeting.
 
 ### Stream Unbind
+
+If a user want to remove the streamObject from a DOM element , _streamUnbind_ can be used.
+
 ```js
-streamUnbind ( tile_id : string  ) :  void
+meetingsession.streamUnbind(tile_id)
 ```
-Unbinds streams from an element. Use this only after elements has been created.
 
-**Parameters**
- - tile_id : string 
+_streamUnbind_ type is as follows:
 
-**Returns**     `void`
+```js
+streamUnbind((tile_id: string))
+```
+
+**tile_id** - indicates the DOM element id where stream needs to be removed.
 
 ### Pause Subscriber Video
+
+_pauseSubscriberVideo_ method can be used to pause the video of a remote participant.
+This function is useful to save the bandwidth, the video of a remote participant can be paused when the remote user is not the current view.
+
 ```js
-pauseSubscriberVideo ( participantsId : string[array]  pause : boolean  ) :  void
+meetingsession.pauseSubscriberVideo(participantsId, pause)
 ```
-You can pause the video of a remote participant in a meeting.This will only affect your view the actual video will not be paused.This pause is only applicable to the person who is calling this function.It will not affect other participants or the person who is sending his video. This is useful to pause the video of a participant who is not in your current view or when the user’s bandwidth is unstable.
-Note: Don’t pass the participant_id of the current user. (publisher)
 
-**Parameters**
- - participantsId : string[array]  
- - pause : boolean 
+Data type of _pauseSubscriberVideo_ is as follows:
 
-**Returns**     `void`
+```js
+pauseSubscriberVideo((participantsId: Array<string>), (pause: boolean))
+```
+
+**participantsId** - an array of participants whose video should be paused or resumed.
+
+**pause** - a boolean value that indicates whether the video should be paused (true) or resumed (false).
+
+After calling the _pauseSubscriberVideo_ function, a s*treammodified* event is fired to notify about the update. Note that the local participant's video cannot be paused using this function.
 
 ### Remote Participant Video Quality
+
+The _remoteParticipantVideoQuality_ function can be used to adjust the video quality of a remote participant. This is very useful to save the bandwidth.
+We can request for low quality video when the video tile size is small, eg, while a screenshare or whiteboard session is in progress.
+
 ```js
-remoteParticipantVideoQuality ( participantId : string[array]  bitrate : number, framerate : number  ) :  void
+meetingsession.remoteParticipantVideoQuality(participantsId, bitrate, framerate)
 ```
-You can set the quality of the remote participants' video you are receiving.
-Configurations for bitrate and frame rates  0 ,1 ,2 are available.
 
-  *0 - Low 
+Data type of _remoteParticipantVideoQuality_ is as follows:
 
-  *1- Medium
+```js
+remoteParticipantVideoQuality(
+  (participantsId: Array<string>),
+  (bitrate: 0 | 1 | 2),
+  (framerate: 0 | 1 | 2)
+)
+```
 
-  *2 - High
+**participantsId** - an array of participants whose video quality should be adjusted. Note that the local participant's video quality cannot be changed using this function.
 
-  This is useful to adjust the video quality when the network conditions become unstable.
+**bitrate** - a value that indicates the desired video bitrate, with 2 representing high bitrate and 0 representing low bitrate.
 
-**Parameters**
- - participantId : string[array]  
- - bitrate : number, 
- - framerate : number 
+**Framerate** - a value that indicates the desired video frame rate, with 2 representing high frame rate and 0 representing low frame rate. The highest frame rate is 30 fps.
 
-**Returns**     `void`
+It is recommended to use bitrate and framerate with same value when requesting a remote video quality, eg, if bitrate is 1 keep 1 for framerate also.
+
+After calling the _remoteParticipantVideoQuality_ function, a _streammodified_ event is fired to notify about the update.
 
 ### Host Allow Participants
+
+When a participant is in the waiting room, the host gets a _peopleWaiting_ event listener which contains transaction*id. The transaction id can be passed to \_hostAllowPartcipant* to allow or deny the access to the meeting.
+
 ```js
-hostAllowParticipants ( transaction_id : string[array]  allow : boolean  ) :  void
+meetingsession.hostAllowParticipants(transaction_id, allow)
 ```
-Allows hosts to give participants the permission to enter a locked meeting.
 
-**Parameters**
-- transaction_id : string[array]  
- - allow : boolean 
+Data type of _hostAllowPartcipant_ is as follows:
 
-**Returns**     `void`
+```js
+hostAllowParticipants(
+    transaction_id: Array<string>
+    allow: boolean,
+  )
+```
+
+**transaction_id** - a unique identifier returned from the _peopleWaiting_ event listener. It is used to identify the specific participant who is waiting in the waiting room.
+
+**allow** - a boolean value that indicates whether the participant should be allowed (true) or denied (false).
 
 ### Host Lock Meeting Action
+
+Meetings can be either open or locked. Open meetings can be joined by anyone who has the proper authentication credentials, while locked meetings require the host's approval for new participants to join.
+The current state of the meeting can be obtained through the _meetingstate_ event. If a host wants to change the default state of the meeting room, they can use the _hostLockMeetingAction_ function.
+
 ```js
-hostLockMeetingAction ( hostlock : boolean  ) :  void
+meetingsession.hostLockMeetingAction(lockState)
 ```
-Allows hosts to lock/unlock the meeting so that participants cannot enter the meeting without host’s permission. This is useful to lock the meeting while the meeting is in progress.
 
+**lockState** - indicates whether the meeting should be locked (true) or unlocked (false).
 
-**Parameters**
- - hostlock : boolean 
-
-**Returns**     `void`
+After calling the _hostLockMeetingAction_ function, a _meetingstate_ event is fired to acknowledge the change in state. This event is received by all participants, including the local participant.
 
 ### Host Manage Raise Hand
+
+The _hostManageRaiseHand_ function can be used by a host to lower the raised hand of a participant who has previously raised their hand during the meeting.
+
 ```js
-hostManageRaiseHand ( participant_id : string  ) :  void
+meetingsession.hostManageRaiseHand(participant_id)
 ```
-Gives host ability to lower a participant’s raised hand
 
-**Parameters**
- - participant_id : string 
-
-**Returns**     `void`
+**participant_id** - indicates which participants raise hand need to be taken down.
 
 ### Host Manage Participant Stream
+
+As a host, you have the ability to turn off or on the audio and video for all participants in the meeting. To mute all participants, the SDK will forcefully mute them and send an acknowledgement through the host event.
+To unmute, the SDK will only pass the host's request to the remote participants and leave it up to them to decide whether they want to turn on their audio and video.
+
 ```js
-hostManageParticipantStream ( participant_id : string, mute : boolean, stream :   ) :  void
+meetingsession.hostManageParticipantsStream(participant_id, mute, stream)
 ```
-Gives hosts the ability to mute on/off a participant’s audio and video.
 
-**Parameters**
- - participant_id : string, 
- - mute : boolean, 
- - stream :  
+Data type of _hostManageParticipantsStream_ is as follows:
 
-**Returns**     `void`
+```js
+hostManageParticipantsStream(
+    participant_id: string,
+    mute: boolean,
+    stream: ”audio” | “video”
+)
+```
+
+**participant_id** - id of participant whose audio/video to mute/unmute.
+
+**mute** - indicates whether it’s a mute (OFF state) or unmute (ON state) action. true indicates mute and false
+indicates unmute.
+
+**stream** - indicates if it is audio or video
 
 ### Host Manage All Participants Audio
+
+As a host, you have the ability to turn off or on the audio for all participants in the meeting. To mute all participants, the SDK will forcefully mute them and send a notification through the host event.
+To unmute, the SDK will only pass the host's request to the remote participants and leave it up to them to decide whether they want to turn on their microphone.
+
 ```js
-hostManageAllParticipantsAudio ( hostMute : boolean  ) :  void
+meetingsession.hostManageAllParticipantsAudio(muteState)
 ```
-Gives hosts the ability to turn on/off all participant’s audio at once. Require participant’s permission to turn on
 
-**Parameters**
- - hostMute : boolean 
+**muteState** - indicates whether the host should mute (true) or unmute (false) the audio of the remote participants.
 
-**Returns**     `void`
+After calling the _hostManageAllParticipantsAudio_ function, a host event is fired for all remote participants to notify them about the change in audio status.
 
 ### Host End Meeting
-```js
-hostEndMeeting ( ) :  void
-```
-Gives hosts the ability to end the meeting for all participants
 
-**Returns**    `void`
+The _hostEndMeeting_ function is a feature available to the host of a meeting. When called, it terminates the meeting for all participants, including the host.
+
+```js
+meetingsession.hostEndMeeting()
+```
+
+After the _hostEndMeeting_ function is called, a _host_ event is fired for all remote participants to notify them that the meeting has been terminated.
 
 ### Host Remove Participant
+
+The _hostRemoveParticipant_ function is used by a host to remove a participant from the meeting. When this function is called, the meeting will be ended for the remote participant.
+
 ```js
-hostRemoveParticipant ( participant_id : string  ) :  void
+meetingsession.hostRemoveParticipant(participant_id)
 ```
-Gives hosts the ability to remove/kick participants out from the meeting. This participant can join back again if they wish to.
 
-**Parameters**
- - participant_id : string 
+**Participant_id** - the id of the participant who should be removed from the meeting
 
-**Returns**     `void`
+After calling the _hostRemoveParticipant_ function, a _host_ event is fired for all remote participants to notify them about the removal. The removed participant can rejoin the meeting. This is the current limitation of the SDK and will be fixed in a future version.
 
 ### Leave Meeting Session
+
+_leaveMeetingSession_ is used to end the meeting. It will close all the connections made on the SDK.
+
 ```js
-leaveMeetingSession ( ) :  void
+meetingsession.leaveMeetingSession()
 ```
-Leaves an on-going meeting.
 
-**Returns**     `void`
+## Chat Methods
 
+### User Login
 
+The _userLogin_ function is used to log a user into the application. Once logged in, the user is able to start a new group or 1-1 chat,view the existing chat and perform other actions. This function allows users to authenticate and access the features and functionality of the SDK.
 
+```js
+  chatsession.userLogin(userName,password)
+  .then((res)=>{
+     // contains device list information
+   })
+  .catch((e)=>{// handle error})
+```
 
+_userLogin_ type is as follows:
 
+```js
+userLogin(
+    userName: string,
+    password: string
+)
+  .then((res)=>{
+     //login success
+   })
+  .catch((e)=>{// login failed})
+```
 
+**userName** - userName is a string parameter.
 
+**password** - password is a string parameter representing the user's password.
 
+After login success response contains:
 
+```js
+{
+  email: string
+  firstname: string
+  lastname: string
+  token: string
+  hoolva_user: string
+}
+```
 
+**email** - email is a property that holds a string value, which can be any sequence of characters, representing the email of a user.
+
+**firstname** - firstname is a property that holds a string value, which can be any sequence of characters, representing the first name of a user.
+
+**lastname** - lastname is a property that holds a string value, which can be any sequence of characters, representing the last name of a user.
+
+**token** - token is a property that holds a string value, which could be an authentication token that could be used to identify a user.
+
+**hoolva_user** - hoolva_user is a property that holds a string value. This is to identify the user in hoolva.
+
+### Initialise Session
+
+Initialise Session establish connection for the chats.
+
+```js
+chatsession.initialiseSession()
+```
+
+This function is advised to be called right after userLogin. User and Group data is only available after calling this function. _readyState_ event listener is triggered after calling this event which indicates User and Group data are available to fetch.
+
+### User Logout
+
+To log out one needs to call the _userLogout_ function. This will terminate the login session.
+
+```js
+chatsession.userLogout().then((res) => {
+  //log out successfully
+})
+```
+
+After a successful log out the function will return:
+
+```js
+{
+  status: 'success'
+  message: 'Logged out successfully'
+}
+```
+
+**status** - status is a property that holds a string value, It could represent the status of the operation indicating a successful logout.
+
+**message** - message is a property that holds a string value, It could hold a message that provides more information about the status of the operation, such as providing feedback that the logout was successful.
+
+### Add Event Listener
+
+On SDK numerous events are occurring at a time. Events need to be handled on client side for a proper working of the chat.
+Events can be listened using the _addEventListener_ function. Eventlistener can be used as follows:
+
+```js
+chatsession.addEventListener(key, callback)
+```
+
+Listeners should be added right after creating a ChatSession. When an event occurs concurrent callback function is called [Meeting events](Electron#meeting-events)
+
+Possible keys for listeners are
+
+**readyState**
+
+**Message**
+
+### Fetch User Data
+
+_fetchUserData_ is used to get the details of the users under the tenant.
+
+```js
+const group_details = chatsession.fetchUserData()
+```
+
+Returned data type is a follows:
+
+```js
+Array<{
+        uuid: string,
+        status: string
+        profile_picture: string
+        presence: "online" | "offline",
+        unread_msg_count: number,
+        messages: Array<
+                {
+                    uuid: string,
+                    type: "text" | "reaction" | "file" | "system",
+                    to: string,
+                    tenant: string,
+                    status: string,
+                    seen: Array<string>,
+                    reply_to: string | undefined,
+                    other_info_map: Array<string>,
+                    from: string,
+                    forward_from: string | undefined,
+                    category: "message” | edited_message”
+                           |”seen_message”|”delete_message",
+                    body: any,
+                    a_mtime: number,
+                    a_ctime: number
+                }
+            >,
+        lastname: string,
+        firstname: string,
+        display_name: string | undefined
+    },
+>
+```
+
+**uuid** : - unique id of the member.
+
+**unread_msg_count** : - total number of unread messages from that member.
+
+**status** : - active / deactivate - if the user is a hoolva tenant user.
+
+**firstname** : - first name of the member.
+
+**lastname** : - last name of the member.
+
+**display_name** : - display name of the member if the user has set any. If user didn’t set it it will be undefined.
+
+**profile_picture** : - URL of the profile_picture of member.
+
+**presence** : - indicates whether the member is offline or online.
+
+**messages** : - Array of objects which contains the chat messages to that member. it only contains the last 8 messages. To fetch the previous messages you need to call [_getMessageHistory_](Electron#get-message-history).
+
+Message contains fields as:
+
+- _to_ :- id of the remote member which user messaged.
+
+- _from_ :- id of the user.
+
+- _tenant_ :- tenant UUID.
+
+- _status_ :- status of the message. Possible values are:
+
+  _sent_ :- indicates message has been sent to server.
+
+  _delivered_server_ :- indicates message has been received to server.
+
+  _delivered_remote_participant_ :- indicates message has been received to remote participant.
+
+  _read_ :- indicates message has been read by the remote participant.
+
+- _a_ctime_ :- timestamp which indicates the creation time of the message.
+
+- _a_mtime_ :- timestamp which indicates the last modified time of the message.
+
+- _body_ :- content of the message.
+
+- _category_ :- indicates the current status of the message. Possible values are:
+
+               _edited_message_
+
+               _seen_message_
+
+               _delete_message_
+
+- _other_info_map_
+
+- _forward_from_
+
+- Vreply_toV
+
+- _type_ :- indicates the type of the message. Possible values are "text" | "reaction" | "file" | "system".
+
+### Fetch Group Data
+
+_fetchGroupData_ is used to get the details of the group. it only returns the group if the member is in the group.
+
+```js
+const group_details = chatsession.fetchGroupData()
+```
+
+Returned data type is as follows:
+
+```js
+Array<{
+        uuid: string,
+        status: string
+        profile_picture: string
+        created_by: string
+        modified_by: string
+        unread_msg_count: number,
+        messages: Array<
+                {
+                    uuid: string,
+                    type: "text" | "reaction" | "file" | "system",
+                    to: string,
+                    tenant: string,
+                    status: string,
+                    seen: Array<{user_uuid:string, timestamp:number}>,
+                    reply_to: string | undefined,
+                    other_info_map: Array<string>,
+                    from: string,
+                    forward_from: string | undefined,
+                    category: "message” | edited_message”
+                           |”seen_message”|”delete_message",
+                    body: any,
+                    a_mtime: number,
+                    a_ctime: number
+                }
+            >,
+        name : string,
+        description: string,
+        admin: Array<string>
+        a_mtime: number,
+        a_ctime: number
+    },
+>
+```
+
+**uuid** : - unique id of the group.
+
+**unread_msg_count** : - total number of unread messages from that group.
+
+**status** : - used in hoolva user table.
+
+**name** : - name of the group.
+
+**description** : - Description of the group.
+
+**profile_picture** : - URL of the profile_picture of the group.
+
+**created_by** : - UUID of the member who created the group.
+
+**admin** : - An array contains uuid of the admins.
+
+**modified_by** : - UUID of the participant who recently changed the group settings.
+
+**a_ctime** :- timestamp which indicates the creation of the group.
+
+**a_mtime** :- timestamp which indicates the last modified time of the group settings.
+
+**messages** : - Array of objects which contains the chat messages to that group. .it only contains the last 8 messages. To fetch the previous messages one need to call getMessageHistory.
+
+Message contains fields as:
+
+- _to_ :- id of the group which user messaged.
+
+- _from_ :- id of the user.
+
+- _tenant_ :- tenant UUID.
+
+- _status_ :- status of the message. Possible values are:
+
+  _sent_ :- indicates message has been sent to server.
+
+  _delivered_server_ :- indicates message has been received to server.
+
+  _delivered_remote_participant_ :- indicates message has been received to remote participant.
+
+  _read_ :- indicates message has been read by the remote participant.
+
+- _a_ctime_ :- timestamp which indicates the creation time of the message.
+
+- _a_mtime_ :- timestamp which indicates the last modified time of the message.
+
+- _body_ :- content of the message.
+
+- _category_ :- indicates the current status of the message. Possible values are:
+
+  _edited_message_
+
+  _seen_message_
+
+  _delete_message_
+
+- _Seen_
+
+- _other_info_map_
+
+- _forward_from_
+
+- _reply_to_
+
+- _type_ :- indicates the type of the message. Possible values are "text" | "reaction" | "file" | "system".
+
+### Get Message History
+
+​​getMessageHistory is used to fetch old messages from a group or one to one chats.
+
+```js
+chatsession.getMessageHistory({
+ uuid:string,
+ count:string,
+ a_ctime?:number
+})
+.then((res)=>{
+     //contains old messages
+   })
+```
+
+**uuid** : - indicate the uuid of the group or person which history message needs to be fetched.
+
+**count** : - indicates how many history messages needed to fetched.
+
+**a_ctime** :- (optional) indicate the a_ctime of the oldest message which client have.
+
+### Publish Message
+
+Publish message is used to send a message to group or one to one chat.
+
+```js
+chatsession.publishMessage(
+  (message: string | Buffer),
+  (uuid: string),
+  (isGroup: boolean)
+)
+```
+
+**message** : - content of the message.
+
+**uuid** :- uuid of the group or member where message needed to be sent.
+
+**a_mtime** :- indicates whether specified id belongs to group or not.
+
+### Add Group
+
+_addGroup_ is used to create a group. The members under the tenant can be added as group members.It’s not mandatory to add the user id to admin and member field.
+Because the user's UUID is automatically added into members and admin fields if it’s not passed from the client side.
+
+```js
+chatsession.addGroup(groupData?:{
+       name: string,
+       members: Array<string>,
+       description?: string,
+       admin?: Array<string>,
+       status?: string,
+      })
+.then((res)=>{
+       //contains group data
+   })
+```
+
+**name** : - name of the group.
+
+**members** :- array with members_id which needs to be added on the meeting.
+
+**description** :- (optional) indicates whether specified id belongs to group or not.
+
+**admin** :- (optional) array with members_id which needs to be added as the admin in the meeting.
+
+**status** : - (optional) indicates whether the group is active or not.
+
+### Delete Group
+
+_deleteGroup_ allows clients to delete a group. Only admin can delete the group.
+
+```js
+chatsession.deleteGroup((uuid: string)).then((res) => {
+  //group has been successfully deleted
+})
+```
+
+**status** : - UUID of the meeting.
+
+### Add Group Member
+
+_addGroupMember_ allows clients to add a member to the group . Only admin can delete the group.
+
+```js
+chatsession
+  .addGroupMember((group_uuid: string), (members: Array<string>))
+  .then((res) => {
+    //members has been successfully added
+  })
+```
+
+**uuid** :- uuid of the group.
+
+**admin** :- array of uuid which contains the id of members who needed to be added on group.
+
+### Add Group Admin Privilege
+
+_addGroupAdminPrivilege_ allows a group admin to give admin privileges to another member in the group. This can applied only to the existing members of the group.
+
+```js
+chatsession
+  .addGroupAdminPrivilege((group_uuid: string), (admin: Array<string>))
+  .then((res) => {
+    //admin privilege has been successfully added
+  })
+```
+
+**uuid** :- uuid of the group.
+
+**admin** :- array of uuid which contains the id of members who needs admin privileges.
+
+### Remove Group Admin Privilege
+
+_removeGroupAdminPrivilege_ allows clients to remove admin privileges for a member . Only an admin can remove the admin privileges of another member. This will not remove the member from the group.
+
+```js
+chatsession
+  .removeGroupAdminPrivilege((group_uuid: string), (admin: Array<string>))
+  .then((res) => {
+    //admin privilege has been successfully removed
+  })
+```
+
+**uuid** :- uuid of the group.
+
+**admin** :- array of uuid which contains the id of members who needed to be removed from admin title.
+
+### Delete Group Member
+
+_deleteGroupMember_ allows an admin user to remove a member from the group.
+
+```js
+chatsession
+  .deleteGroupMember((group_uuid: string), (member_id: string))
+  .then((res) => {
+    //member has been successfully removed from the group.
+  })
+```
+
+**uuid** :- uuid of the group .
+
+**member_id** :- UUID of member who needed to be removed from the group.
+
+### Close Connection
+
+_closeConnection_ closes all the connections made on SDK. it will also clear the cached data on the SDK.
+
+```js
+chatsession.closeConnection()
+```
+
+## Chat Listeners
+
+### Ready State
+
+```js
+chatsession.addEventListener('readyState', (data) => {
+  //contains user token
+})
+```
+
+_readyState_ indicates that all the necessary connections have been made to start the application. Client should only fetch or update data after getting ready state event.
+
+Returned data as follows:
+
+```js
+{
+  uuid: string,
+  firstname: string,
+  lastname: string
+}
+```
+
+**uuid** :- uuid of the logged in user.
+
+**firstname** :- first name of the user.
+
+**lastname** :- last name of the user.
+
+### Message
+
+```js
+chatsession.addEventListener('message', (data) => {
+  //contains message data
+})
+```
+
+All chat messages and system events and notifications will be passed through message event.
+
+Returned data as follows:
+
+```js
+{
+  isGroup: boolean,
+  message: {
+     from: string,
+     to: string,
+     uuid: string,
+     category: "message” | edited_message”|
+               ”seen_message”|”delete_message",
+     body: string,
+     type: string,
+     tenant: string,
+     a_ctime: string,
+     status: string,
+}
+```
+
+**isGroup** :- indicates if it is group or not.
+
+**message** :- contains the properties of the message.
+
+**from** :- UUID of the member who sent the message.
+
+**to** :- UUID of the receiver. If it is group it will be group UUID.
+
+**uuid** :- UUID of the message.
+
+**a_ctime** :- timestamp which indicates the time of the creation of this message.
+
+**status** :- indicates the message delivered status.
+
+     _sent_ :- indicates message has been sent to server.
+
+     _delivered_server_ :- indicates message has been received to server.
+
+     _delivered_remote_participant_ :- indicates message has been received to remote participant.
+
+     _read_ :- indicates message has been read by the remote participant.
+
+**body**:- content of the message.
+
+**type** :- indicates the type of the message. Possible values are "text" | "reaction" | "file" | "system".
+
+**category** :- indicates the current status of the message. Possible values are:
+
+               _edited_message_
+
+               _seen_message_
+
+               _delete_message_

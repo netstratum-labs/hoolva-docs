@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "description": "Developer documentation - supports web, electron and react-native",
   "main": "index.js",
-
   "scripts": {
     "dev": "next",
     "start": "next start",
-    "build": "next build"  
+    "build": "next build"
   },
   "author": "hoolva teams",
   "license": "MIT",
   "dependencies": {
-    "next": "^12.3.0",
+    "next": "^12.3.4",
     "nextra": "^1.1.0",
     "nextra-theme-docs": "^1.2.2",
     "react": "^18.2.0",
